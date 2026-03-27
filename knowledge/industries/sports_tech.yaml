@@ -1,0 +1,109 @@
+# Sports Technology industry knowledge
+# Used by DiscoveryAgent and ResearchAgent for domain-specific context
+
+key_companies:
+  - name: StatsBomb
+    hq: London, UK
+    focus: advanced football analytics, open data initiatives
+  - name: Opta (Stats Perform)
+    hq: London, UK
+    focus: real-time sports data collection and analysis
+  - name: Catapult Sports
+    hq: Melbourne, Australia
+    focus: wearable athlete tracking and performance monitoring
+  - name: Second Spectrum
+    hq: Los Angeles, USA
+    focus: computer vision tracking, NBA/MLS official tracking provider
+  - name: Hawk-Eye Innovations
+    hq: Basingstoke, UK
+    focus: ball-tracking technology, officiating systems (VAR, DRS)
+  - name: Stats Perform
+    hq: Chicago, USA
+    focus: AI-powered sports data, predictions, and media content
+  - name: Genius Sports
+    hq: London, UK
+    focus: official sports data distribution, integrity monitoring
+  - name: Sportradar
+    hq: St. Gallen, Switzerland
+    focus: sports data feeds, betting integrity, media services
+  - name: Hudl
+    hq: Lincoln, USA
+    focus: video analysis platform for coaches and athletes
+  - name: Kitman Labs
+    hq: Dublin, Ireland
+    focus: athlete optimization, injury risk analytics
+
+common_roles:
+  - Data Scientist
+  - ML Engineer
+  - Computer Vision Engineer
+  - Sports Analyst
+  - Data Engineer
+  - Applied Research Scientist
+  - Backend Engineer (real-time systems)
+  - Product Manager (analytics)
+
+ml_use_cases:
+  - player_tracking: "Real-time positional tracking from broadcast or dedicated cameras"
+  - match_prediction: "Pre-match and in-play outcome probability models"
+  - injury_prevention: "Workload monitoring and soft-tissue injury risk models"
+  - performance_analytics: "Expected goals (xG), expected threat, passing networks"
+  - scouting: "Player similarity models, recruitment recommendation engines"
+  - tactical_analysis: "Formation detection, pressing intensity, off-ball movement"
+  - broadcast_enhancement: "Automated highlights, augmented reality overlays"
+  - fan_engagement: "Personalized content, fantasy sports optimization"
+
+tech_stacks:
+  languages:
+    - Python
+    - SQL
+    - R
+    - Scala
+  ml_frameworks:
+    - PyTorch
+    - TensorFlow
+    - scikit-learn
+    - XGBoost
+    - OpenCV
+  cloud:
+    - AWS
+    - GCP
+    - Azure
+  data:
+    - Spark
+    - Kafka
+    - Airflow
+    - dbt
+    - BigQuery
+    - Snowflake
+  specialised:
+    - computer vision (YOLO, Detectron2)
+    - real-time data processing (Flink, Kafka Streams)
+    - time-series analysis
+    - geospatial analytics
+    - video processing (FFmpeg, GStreamer)
+
+hiring_signals:
+  job_title_keywords:
+    - "sports analytics"
+    - "computer vision"
+    - "tracking"
+    - "player performance"
+    - "ML engineer"
+    - "data scientist"
+    - "real-time"
+  description_keywords:
+    - "event data"
+    - "tracking data"
+    - "expected goals"
+    - "athlete monitoring"
+    - "wearable"
+    - "broadcast"
+    - "xG"
+    - "biomechanics"
+  positive_signals:
+    - engineering blog posts about ML infrastructure
+    - open-source contributions (e.g. StatsBomb open data)
+    - partnerships with leagues or federations
+    - recent funding rounds or IPO activity
+    - new office openings or headcount growth

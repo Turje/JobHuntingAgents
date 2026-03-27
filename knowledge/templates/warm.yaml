@@ -1,0 +1,56 @@
+# Warm intro email template
+# Used by OutreachAgent when a mutual connection or shared context exists
+
+template_name: warm_intro
+description: Email to someone you share a connection with (mutual contact, same event, same community)
+
+subject_pattern: "{mutual_context} -- {brief_intent}"
+# Examples:
+#   "Met at NeurIPS poster session -- ML roles at your team"
+#   "Via Sarah Chen -- data science at Stripe"
+
+body_structure:
+  opening:
+    purpose: Establish the shared connection immediately
+    max_words: 35
+    guidelines:
+      - Lead with the mutual connection, event, or community
+      - Name the person or context that links you
+      - If a mutual contact, mention you have their blessing to reach out (only if true)
+      - Warmer tone than cold -- you already have a reason to talk
+    example: "Sarah Chen suggested I reach out -- she mentioned your team is scaling up the fraud detection pipeline and thought my background might be relevant."
+
+  value_prop:
+    purpose: Connect your skills to their needs, leveraging the shared context
+    max_words: 70
+    guidelines:
+      - Reference what the mutual connection told you about the team or role
+      - Briefly state your relevant experience
+      - Show you understand their specific challenges, not just the company name
+      - Keep it conversational -- this is closer to a warm handshake than a pitch
+    example: "I've been building real-time anomaly detection systems for the past two years, most recently at a Series B fintech where we cut false positives by 40%. Sarah mentioned your team is dealing with similar precision-recall tradeoffs at scale."
+
+  ask:
+    purpose: One clear, low-pressure call to action
+    max_words: 30
+    guidelines:
+      - Slightly warmer ask than cold -- you can suggest coffee or a call
+      - Still keep it easy to say yes
+      - Reference the mutual connection as a trust anchor
+    example: "Would you be open to a quick 20-minute call this week? Happy to share what worked for us on the precision side."
+
+  closing:
+    purpose: Warm sign-off referencing the connection
+    max_words: 20
+    guidelines:
+      - Brief and friendly
+      - Optionally mention you'll let the mutual contact know you connected
+    example: "Looking forward to it -- I'll let Sarah know we're in touch.\nSaar"
+
+tips:
+  - Total email should be 120-200 words -- warm intros can be shorter since trust is pre-built
+  - Always confirm the mutual contact is comfortable being named before sending
+  - Subject line should make the connection obvious so the email gets opened
+  - Response rates for warm intros are 3-5x higher than cold -- don't waste the advantage with a generic message
+  - Follow up within 3 business days if no response
+  - If the mutual contact offered to make the intro directly, prefer that over a self-initiated warm email

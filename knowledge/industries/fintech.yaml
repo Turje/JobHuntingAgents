@@ -1,0 +1,112 @@
+# Fintech industry knowledge
+# Used by DiscoveryAgent and ResearchAgent for domain-specific context
+
+key_companies:
+  - name: Stripe
+    hq: San Francisco, USA
+    focus: payment infrastructure and developer-first financial APIs
+  - name: Plaid
+    hq: San Francisco, USA
+    focus: financial data connectivity, open banking APIs
+  - name: Square (Block)
+    hq: San Francisco, USA
+    focus: point-of-sale, Cash App, Bitcoin services
+  - name: Affirm
+    hq: San Francisco, USA
+    focus: buy-now-pay-later, credit risk underwriting
+  - name: Robinhood
+    hq: Menlo Park, USA
+    focus: commission-free trading, retail investing platform
+  - name: Wise (TransferWise)
+    hq: London, UK
+    focus: international money transfers, multi-currency accounts
+  - name: Revolut
+    hq: London, UK
+    focus: digital banking, crypto, stock trading
+  - name: Nubank
+    hq: Sao Paulo, Brazil
+    focus: digital banking for Latin America, credit cards
+  - name: Klarna
+    hq: Stockholm, Sweden
+    focus: buy-now-pay-later, shopping ecosystem
+  - name: Brex
+    hq: San Francisco, USA
+    focus: corporate cards and spend management for startups
+
+common_roles:
+  - ML Engineer
+  - Data Scientist (Risk)
+  - Fraud Analyst / Engineer
+  - Quantitative Analyst
+  - Data Engineer
+  - Backend Engineer (payments)
+  - Applied Research Scientist
+  - Risk Modelling Engineer
+
+ml_use_cases:
+  - fraud_detection: "Real-time transaction fraud scoring and anomaly detection"
+  - credit_risk: "Underwriting models using alternative data sources"
+  - aml_compliance: "Anti-money-laundering pattern detection and SAR generation"
+  - algorithmic_trading: "Market-making, execution optimization, alpha signals"
+  - customer_segmentation: "Behavioural clustering for product recommendations"
+  - churn_prediction: "Early-warning models for customer retention"
+  - document_processing: "OCR and NLP for KYC, loan applications, invoices"
+  - conversational_ai: "Customer support chatbots, financial advisor copilots"
+
+tech_stacks:
+  languages:
+    - Python
+    - Java
+    - Go
+    - Scala
+    - SQL
+  ml_frameworks:
+    - PyTorch
+    - TensorFlow
+    - XGBoost
+    - LightGBM
+    - scikit-learn
+  cloud:
+    - AWS
+    - GCP
+    - Azure
+  data:
+    - Spark
+    - Kafka
+    - Airflow
+    - Flink
+    - Snowflake
+    - Databricks
+    - Redis
+  specialised:
+    - real-time streaming (Kafka, Flink)
+    - graph databases (Neo4j) for fraud networks
+    - feature stores (Feast, Tecton)
+    - model monitoring (Evidently, Arize)
+    - explainability (SHAP, LIME)
+
+hiring_signals:
+  job_title_keywords:
+    - "fraud"
+    - "risk"
+    - "ML engineer"
+    - "data scientist"
+    - "quantitative"
+    - "underwriting"
+    - "payments"
+  description_keywords:
+    - "real-time scoring"
+    - "transaction monitoring"
+    - "credit model"
+    - "AML"
+    - "KYC"
+    - "regulatory"
+    - "feature store"
+    - "model explainability"
+  positive_signals:
+    - recent banking licence or charter approval
+    - regulatory compliance team expansion
+    - engineering blog posts on ML in production
+    - open-source ML tooling contributions
+    - Series B+ funding or recent IPO
+    - expansion into new markets or product lines

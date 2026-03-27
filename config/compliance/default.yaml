@@ -1,0 +1,28 @@
+# Compliance rules: GDPR, rate limits, email etiquette
+
+gdpr:
+  require_consent_before_storing_contact: true
+  anonymize_after_days: 90
+  right_to_deletion: true
+
+rate_limits:
+  max_emails_per_company_per_week: 1
+  max_follow_ups: 2
+  cooldown_days_between_contacts: 7
+  max_linkedin_views_per_day: 50
+
+email_etiquette:
+  max_subject_length: 80
+  max_body_words: 300
+  require_unsubscribe_option: false
+  personalization_required: true
+  forbidden_words:
+    - "urgent"
+    - "act now"
+    - "limited time"
+    - "guaranteed"
+
+contact_rules:
+  prefer_public_emails: true
+  never_scrape_personal_emails: true
+  respect_do_not_contact: true

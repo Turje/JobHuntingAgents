@@ -1,0 +1,58 @@
+# Referral request email template
+# Used by OutreachAgent when asking an existing contact to refer you into a company
+
+template_name: referral_request
+description: Email to someone in your network asking them to refer you to a specific company or team
+
+subject_pattern: "{company_name} referral -- quick ask"
+# Examples:
+#   "Stripe referral -- quick ask"
+#   "Google Brain referral -- quick ask"
+
+body_structure:
+  opening:
+    purpose: Re-establish the relationship and set context
+    max_words: 30
+    guidelines:
+      - Reference your existing relationship (how you know them, last interaction)
+      - Keep it genuine -- don't manufacture warmth
+      - Acknowledge their time upfront
+    example: "Hey David -- hope the new role at Stripe is going well. I saw your post about the payments team hackathon, looked like a blast."
+
+  value_prop:
+    purpose: Explain why you're a strong fit for the role and make it easy for them to advocate for you
+    max_words: 80
+    guidelines:
+      - Name the specific role or team you're targeting
+      - Give them 2-3 concrete talking points they can use when referring you
+      - Frame it as making their referral easy, not as a favor
+      - Include a brief line on why you're excited about the company specifically
+    example: "I've been eyeing the ML Engineer role on the risk team. My last two years were spent building real-time fraud scoring at scale -- 50K transactions/sec, sub-50ms latency. I think my experience with feature stores and model monitoring maps well to what your team described in the recent engineering blog."
+
+  ask:
+    purpose: Make the referral request explicit and easy to act on
+    max_words: 40
+    guidelines:
+      - Be direct about what you're asking (a referral, not just advice)
+      - Offer to send your resume and any other materials they need
+      - Make it clear you don't expect them to guarantee anything
+      - Give them an easy out if they're not comfortable
+    example: "Would you be comfortable submitting a referral for me? I can send over my resume and a quick summary of why I think I'm a fit. Totally understand if it's not the right time."
+
+  closing:
+    purpose: Express gratitude and keep the door open
+    max_words: 20
+    guidelines:
+      - Thank them regardless of outcome
+      - Keep it light
+      - Offer reciprocity
+    example: "Really appreciate it either way -- let me know if I can ever return the favor.\nSaar"
+
+tips:
+  - Total email should be 150-250 words
+  - Only ask for referrals from people who actually know your work -- weak referrals can hurt you
+  - Attach or offer to send a tailored resume so they don't have to do extra work
+  - Time your ask before the job posting closes but not the same day it was posted
+  - If they agree, follow up within 24 hours with all materials they need
+  - Send a thank-you note after the referral regardless of the outcome
+  - Never ask the same person for more than 2 referrals in a 6-month period

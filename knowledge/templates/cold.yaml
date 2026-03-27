@@ -1,0 +1,55 @@
+# Cold outreach email template
+# Used by OutreachAgent when no prior connection exists with the recipient
+
+template_name: cold_outreach
+description: First-contact email to someone you have no connection with
+
+subject_pattern: "{specific_hook} -- {user_skill} x {company_focus}"
+# Examples:
+#   "Your tracking model paper -- CV engineer exploring sports analytics"
+#   "Fraud detection at scale -- ML engineer interested in fintech"
+
+body_structure:
+  opening:
+    purpose: Hook the reader with a genuine, specific observation
+    max_words: 40
+    guidelines:
+      - Reference something concrete about the company or contact (blog post, product feature, recent funding, open-source project)
+      - Never open with "I hope this email finds you well" or "My name is..."
+      - First sentence should demonstrate you did your homework
+    example: "I read your team's post on real-time feature serving at scale -- the approach to handling skew between training and inference was sharp."
+
+  value_prop:
+    purpose: Connect the user's background to the company's needs
+    max_words: 80
+    guidelines:
+      - Lead with what you can contribute, not what you want
+      - Mention 1-2 specific skills or projects that align with the company's work
+      - Include a quantifiable result if possible
+      - Bridge from their problem space to your experience
+    example: "I've spent the past two years building production CV pipelines for object detection -- most recently a system processing 50K frames/day with sub-100ms latency. Your tracking product looks like a natural fit for that experience."
+
+  ask:
+    purpose: One clear, low-pressure call to action
+    max_words: 30
+    guidelines:
+      - Request a specific time commitment (15-20 minutes)
+      - Make it easy to say yes
+      - Never pressure or create artificial urgency
+    example: "Would you have 15 minutes this week or next to chat about what your DS team is working on?"
+
+  closing:
+    purpose: Polite sign-off
+    max_words: 15
+    guidelines:
+      - Keep it brief and warm
+      - User's first name only
+    example: "Thanks for your time,\nSaar"
+
+tips:
+  - Total email should be 150-250 words -- respect the reader's time
+  - Subject line under 60 characters, no ALL CAPS, no exclamation marks
+  - Send Tuesday-Thursday, 9-11 AM in the recipient's timezone
+  - If no response after 5 business days, send one follow-up (not a copy-paste)
+  - Never attach a resume on first contact -- offer to share if they're interested
+  - Research the contact for at least 2 personalization hooks before drafting

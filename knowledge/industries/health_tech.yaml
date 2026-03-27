@@ -1,0 +1,116 @@
+# Health Tech industry knowledge
+# Used by DiscoveryAgent and ResearchAgent for domain-specific context
+
+key_companies:
+  - name: Tempus
+    hq: Chicago, USA
+    focus: precision medicine, genomic sequencing and AI-driven diagnostics
+  - name: Flatiron Health
+    hq: New York, USA
+    focus: oncology data platform, real-world evidence analytics
+  - name: Viz.ai
+    hq: San Francisco, USA
+    focus: AI-powered stroke detection and clinical coordination
+  - name: PathAI
+    hq: Boston, USA
+    focus: AI-powered pathology, digital slide analysis
+  - name: Butterfly Network
+    hq: Guilford, USA
+    focus: handheld ultrasound with AI-assisted imaging
+  - name: Aidoc
+    hq: Tel Aviv, Israel
+    focus: radiology AI, always-on medical imaging analysis
+  - name: Recursion Pharmaceuticals
+    hq: Salt Lake City, USA
+    focus: AI-driven drug discovery, cellular imaging
+  - name: Insitro
+    hq: South San Francisco, USA
+    focus: ML-driven drug discovery and development
+  - name: Babylon Health
+    hq: London, UK
+    focus: AI triage, virtual primary care, symptom checker
+  - name: Verily (Alphabet)
+    hq: South San Francisco, USA
+    focus: life sciences data platforms, clinical research tools
+
+common_roles:
+  - ML Engineer (Clinical AI)
+  - Data Scientist (Biomedical)
+  - Computer Vision Engineer (Medical Imaging)
+  - Bioinformatics Engineer
+  - NLP Engineer (Clinical Text)
+  - Research Scientist (Drug Discovery)
+  - Data Engineer (Health Data)
+  - Regulatory Affairs Specialist (AI/ML)
+
+ml_use_cases:
+  - medical_imaging: "Radiology and pathology AI for diagnosis assistance"
+  - drug_discovery: "Molecular property prediction, virtual screening, de novo design"
+  - clinical_nlp: "Extracting structured data from clinical notes and EHRs"
+  - genomics: "Variant calling, gene expression analysis, polygenic risk scores"
+  - patient_risk: "Readmission prediction, sepsis early warning, deterioration alerts"
+  - clinical_trials: "Patient matching, site selection, endpoint prediction"
+  - remote_monitoring: "Wearable data analysis, continuous glucose monitoring"
+  - operational_efficiency: "Scheduling optimization, resource allocation, claims processing"
+
+tech_stacks:
+  languages:
+    - Python
+    - R
+    - SQL
+    - Java
+    - C++
+  ml_frameworks:
+    - PyTorch
+    - TensorFlow
+    - scikit-learn
+    - Hugging Face Transformers
+    - MONAI (medical imaging)
+  cloud:
+    - AWS (HIPAA-eligible services)
+    - GCP (Healthcare API)
+    - Azure (Health Data Services)
+  data:
+    - FHIR / HL7 standards
+    - Spark
+    - Airflow
+    - BigQuery
+    - Snowflake
+    - Databricks
+    - RedCap
+  specialised:
+    - medical imaging (DICOM, MONAI, ITK)
+    - bioinformatics (Biopython, Nextflow, Snakemake)
+    - NLP for clinical text (scispaCy, MedCAT)
+    - federated learning (for multi-site studies)
+    - differential privacy
+    - FDA/CE regulatory compliance tooling
+
+hiring_signals:
+  job_title_keywords:
+    - "clinical AI"
+    - "medical imaging"
+    - "bioinformatics"
+    - "health data"
+    - "ML engineer"
+    - "drug discovery"
+    - "NLP"
+    - "regulatory"
+  description_keywords:
+    - "FDA clearance"
+    - "HIPAA"
+    - "EHR"
+    - "clinical validation"
+    - "real-world evidence"
+    - "precision medicine"
+    - "DICOM"
+    - "FHIR"
+    - "SaMD"
+  positive_signals:
+    - FDA 510(k) clearance or De Novo approval
+    - CE marking for European market
+    - peer-reviewed publications by engineering team
+    - partnerships with hospital systems or pharma
+    - SOC 2 / HITRUST certification
+    - recent funding with healthcare-focused VCs
+    - clinical trial collaborations

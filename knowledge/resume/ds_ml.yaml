@@ -1,0 +1,162 @@
+# Resume template for Data Science / Machine Learning roles
+# Used by ResumeAgent to tailor resumes for DS/ML positions
+
+key_sections:
+  - section: professional_summary
+    description: 2-3 sentence overview connecting ML expertise to the target company's domain
+    placement: top
+    required: true
+
+  - section: technical_skills
+    description: Categorized list of tools, frameworks, and languages
+    placement: after summary
+    required: true
+
+  - section: experience
+    description: Reverse-chronological roles with ML-focused bullet points
+    placement: after skills
+    required: true
+
+  - section: projects
+    description: Personal or academic ML projects with measurable outcomes
+    placement: after experience
+    required: true
+
+  - section: education
+    description: Degrees, relevant coursework, thesis topic if ML-related
+    placement: after projects
+    required: true
+
+  - section: publications_and_talks
+    description: Papers, conference talks, blog posts
+    placement: after education
+    required: false
+
+emphasis_areas:
+  core_ml:
+    - model development and training (supervised, unsupervised, reinforcement learning)
+    - feature engineering and selection
+    - hyperparameter tuning and experiment tracking
+    - model evaluation and validation (cross-validation, A/B testing)
+    - production ML systems and MLOps
+
+  deep_learning:
+    - computer vision (object detection, segmentation, classification)
+    - natural language processing (transformers, embeddings, text classification)
+    - generative models (diffusion, GANs, VAEs)
+    - transfer learning and fine-tuning
+
+  data_engineering:
+    - ETL pipeline design and orchestration
+    - data quality and validation
+    - feature stores and real-time feature serving
+    - distributed computing (Spark, Dask, Ray)
+
+  deployment:
+    - model serving (FastAPI, TorchServe, TF Serving, Triton)
+    - containerization (Docker, Kubernetes)
+    - CI/CD for ML pipelines
+    - monitoring and drift detection
+
+action_verbs:
+  building:
+    - Architected
+    - Built
+    - Deployed
+    - Designed
+    - Developed
+    - Engineered
+    - Implemented
+    - Launched
+  improving:
+    - Accelerated
+    - Boosted
+    - Enhanced
+    - Improved
+    - Increased
+    - Optimized
+    - Reduced
+    - Streamlined
+  leading:
+    - Coordinated
+    - Directed
+    - Led
+    - Managed
+    - Mentored
+    - Orchestrated
+    - Spearheaded
+  analyzing:
+    - Analyzed
+    - Evaluated
+    - Identified
+    - Investigated
+    - Quantified
+    - Validated
+    - Benchmarked
+
+metrics_to_include:
+  model_performance:
+    - accuracy / precision / recall / F1 improvements (e.g., "+12% F1 score")
+    - latency reduction (e.g., "sub-100ms inference")
+    - throughput gains (e.g., "50K predictions/sec")
+    - cost savings from model optimization
+  business_impact:
+    - revenue increase or cost reduction
+    - time saved (e.g., "reduced manual review by 60%")
+    - user engagement improvements
+    - error rate reduction
+  scale:
+    - dataset size (rows, features, storage)
+    - training compute (GPU hours, cluster size)
+    - serving volume (requests/sec, daily predictions)
+    - team size managed or collaborated with
+
+skills_categories:
+  languages:
+    - Python
+    - SQL
+    - R
+    - Scala
+    - Java
+    - C++
+  ml_frameworks:
+    - PyTorch
+    - TensorFlow
+    - scikit-learn
+    - XGBoost
+    - LightGBM
+    - Hugging Face Transformers
+    - JAX
+  data_tools:
+    - Pandas
+    - NumPy
+    - Spark
+    - Airflow
+    - dbt
+    - Snowflake
+    - BigQuery
+    - Databricks
+  mlops:
+    - MLflow
+    - Weights & Biases
+    - DVC
+    - Kubeflow
+    - SageMaker
+    - Vertex AI
+  cloud:
+    - AWS (S3, EC2, Lambda, SageMaker)
+    - GCP (BigQuery, Vertex AI, GKE)
+    - Azure (Azure ML, Databricks)
+  visualization:
+    - Matplotlib
+    - Seaborn
+    - Plotly
+    - Streamlit
+    - Grafana
+  dev_tools:
+    - Git
+    - Docker
+    - Kubernetes
+    - Linux
+    - CI/CD (GitHub Actions, Jenkins)
+    - FastAPI

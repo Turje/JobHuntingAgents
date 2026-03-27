@@ -1,0 +1,20 @@
+# Claude API rate limits and retry configuration
+
+max_retries: 3
+retry_base_delay: 1.0  # seconds, exponential backoff
+
+# Token budgets per agent per call
+token_limits:
+  discovery: 4096
+  research: 4096
+  skills: 2048
+  contact: 2048
+  resume: 4096
+  outreach: 4096
+  router: 2048
+
+# Daily limits
+daily_limits:
+  max_api_calls: 500
+  max_outreach_emails: 10
+  max_searches: 20

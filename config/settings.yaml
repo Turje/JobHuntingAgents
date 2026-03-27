@@ -1,0 +1,15 @@
+# Pylon application settings
+
+claude_model: "claude-sonnet-4-6"
+max_companies_per_search: 15
+max_outreach_per_day: 10
+
+host: "127.0.0.1"
+port: 8000
+
+# Pipeline defaults
+default_search_config:
+  include_skills_analysis: true
+  include_contact_search: true
+  include_resume_tailoring: true
+  include_outreach: true
