@@ -1,5 +1,5 @@
 """
-All Pydantic models for the Pylon platform.
+All Pydantic models for the JobHuntingAgents platform.
 Single source of truth — no scattered model files.
 """
 

@@ -1,1 +1,1 @@
-"""Core infrastructure for Pylon."""
+"""Core infrastructure for JobHuntingAgents."""

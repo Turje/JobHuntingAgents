@@ -1,1 +1,1 @@
-"""Pylon — Multi-agent job hunting platform."""
+"""JobHuntingAgents — Multi-agent job hunting platform."""

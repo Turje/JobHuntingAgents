@@ -1,5 +1,5 @@
 """
-FastAPI + WebSocket entry point for Pylon.
+FastAPI + WebSocket entry point for JobHuntingAgents.
 Provides REST endpoints for search pipeline and WebSocket for live progress.
 """
 
@@ -28,13 +28,13 @@ _ws_connections: dict[str, list[WebSocket]] = {}
 async def lifespan(app: FastAPI):
     """Initialize store on startup."""
     await _store.initialize()
-    _logger.info("Pylon started — store initialized")
+    _logger.info("JobHuntingAgents started — store initialized")
     yield
-    _logger.info("Pylon shutting down")
+    _logger.info("JobHuntingAgents shutting down")
 
 
 app = FastAPI(
-    title="Pylon",
+    title="JobHuntingAgents",
     description="Multi-agent job hunting platform",
     version="0.1.0",
     lifespan=lifespan,
@@ -43,8 +43,8 @@ app = FastAPI(
 
 def _get_router():
     """Lazy import to avoid ClaudeClient init at module level."""
-    from pylon.router import PylonRouter
-    return PylonRouter()
+    from pylon.router import JobHuntingAgentsRouter
+    return JobHuntingAgentsRouter()
 
 
 # ---------------------------------------------------------------------------

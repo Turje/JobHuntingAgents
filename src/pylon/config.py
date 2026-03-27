@@ -1,5 +1,5 @@
 """
-YAML + .env config loader for Pylon.
+YAML + .env config loader for JobHuntingAgents.
 """
 
 from __future__ import annotations

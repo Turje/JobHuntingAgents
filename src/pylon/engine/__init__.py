@@ -1,1 +1,1 @@
-"""Pylon engine — external service integrations."""
+"""JobHuntingAgents engine — external service integrations."""

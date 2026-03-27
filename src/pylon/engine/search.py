@@ -1,5 +1,5 @@
 """
-Web search integration for Pylon.
+Web search integration for JobHuntingAgents.
 Provides search capabilities for company discovery and research.
 """
 

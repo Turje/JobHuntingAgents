@@ -1,10 +1,10 @@
-# Pylon -- Claude Code Orchestrator
+# JobHuntingAgents -- Claude Code Orchestrator
 
 ## Project
 
-**Pylon** is a multi-agent job-hunting platform. It uses Claude as the LLM backbone to orchestrate a pipeline of specialized agents (Discovery, Research, Skills, Contact, Resume, Outreach) that automate company research, skill-gap analysis, and personalized cold outreach for job seekers.
+**JobHuntingAgents** is a multi-agent job-hunting platform. It uses Claude as the LLM backbone to orchestrate a pipeline of specialized agents (Discovery, Research, Skills, Contact, Resume, Outreach) that automate company research, skill-gap analysis, and personalized cold outreach for job seekers.
 
-- **Repo root:** The working directory is the Pylon project root.
+- **Repo root:** The working directory is the JobHuntingAgents project root.
 - **Python:** >=3.10, managed via hatch.
 - **LLM:** Anthropic Claude via the `anthropic` SDK, wrapped in `src/pylon/core/claude_client.py`.
 

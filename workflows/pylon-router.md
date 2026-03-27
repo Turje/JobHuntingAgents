@@ -1,6 +1,6 @@
-# Pylon Router
+# JobHuntingAgents Router
 
-The Router is the central orchestrator of Pylon. It receives every user query, classifies intent, dispatches to the appropriate workflow or agent, collects results, and feeds knowledge back into stable-anchor memory.
+The Router is the central orchestrator of JobHuntingAgents. It receives every user query, classifies intent, dispatches to the appropriate workflow or agent, collects results, and feeds knowledge back into stable-anchor memory.
 
 ## Purpose
 

@@ -1,4 +1,4 @@
-# Pylon — Multi-Agent Job Hunting Platform
+# JobHuntingAgents — Multi-Agent Job Hunting Platform
 
 ## Architecture
 - **Router** orchestration with 7-priority intent classification

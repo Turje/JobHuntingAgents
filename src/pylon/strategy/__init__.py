@@ -1,1 +1,1 @@
-"""Pylon strategy modules."""
+"""JobHuntingAgents strategy modules."""

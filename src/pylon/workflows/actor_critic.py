@@ -1,5 +1,5 @@
 """
-Actor-Critic workflow engine for Pylon.
+Actor-Critic workflow engine for JobHuntingAgents.
 Max 3 cycles: actor creates/refines → critic reviews → APPROVED or REQUEST_CHANGES.
 Adapted from 21Agents actor_critic.py.
 """

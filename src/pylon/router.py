@@ -1,5 +1,6 @@
 """
-Pylon router — intent classification → dispatch → workflows.
+JobHuntingAgents router — intent classification → dispatch → workflows.
+Renamed from PylonRouter to JobHuntingAgentsRouter.
 Handles DISCOVER, EMERGENCY, REVIEW, and all other intents.
 """
 
@@ -24,9 +25,9 @@ from pylon.workflows.actor_critic import ActorCriticWorkflow
 _logger = logging.getLogger("router")
 
 
-class PylonRouter:
+class JobHuntingAgentsRouter:
     """
-    Main orchestrator for the Pylon platform.
+    Main orchestrator for the JobHuntingAgents platform.
     Classifies user intent, runs AC planning when needed, dispatches pipeline.
     """
 

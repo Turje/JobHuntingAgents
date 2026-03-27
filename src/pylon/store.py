@@ -1,5 +1,5 @@
 """
-SQLite persistence for Pylon sessions, companies, contacts, and drafts.
+SQLite persistence for JobHuntingAgents sessions, companies, contacts, and drafts.
 Uses aiosqlite with WAL mode for async access.
 """
 

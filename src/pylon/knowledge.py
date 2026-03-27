@@ -1,5 +1,5 @@
 """
-Stable-anchor memory manager for Pylon.
+Stable-anchor memory manager for JobHuntingAgents.
 Reads and updates memory/*.md files using append-after-header pattern.
 Adapted from 21Agents KnowledgeManager.
 """

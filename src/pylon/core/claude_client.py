@@ -1,6 +1,6 @@
 """
 Anthropic SDK wrapper with retry logic and structured logging.
-Adapted from TradeBots — used by every agent in the Pylon pipeline.
+Adapted from TradeBots — used by every agent in the JobHuntingAgents pipeline.
 """
 
 from __future__ import annotations

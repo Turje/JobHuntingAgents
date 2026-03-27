@@ -1,1 +1,1 @@
-"""Pylon agents — specialized job-hunting agents."""
+"""JobHuntingAgents agents — specialized job-hunting agents."""

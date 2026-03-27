@@ -1,5 +1,5 @@
 """
-Abstract base classes for Pylon agents.
+Abstract base classes for JobHuntingAgents agents.
 Two hierarchies: BaseSearchAgent (discovery, research) and BaseAnalysisAgent (skills, contact, resume, outreach).
 """
 
@@ -39,7 +39,7 @@ class BaseSearchAgent(ABC):
         brain_path = Path(__file__).resolve().parent.parent.parent.parent / "agents" / f"{self.name}.md"
         if brain_path.exists():
             return brain_path.read_text()
-        return f"You are the {self.name} agent for Pylon, a job-hunting platform."
+        return f"You are the {self.name} agent for JobHuntingAgents, a job-hunting platform."
 
     def _safe_parse_json(self, text: str) -> list[dict[str, Any]]:
         """Parse Claude's JSON response, stripping markdown fences if present."""
@@ -85,7 +85,7 @@ class BaseAnalysisAgent(ABC):
         brain_path = Path(__file__).resolve().parent.parent.parent.parent / "agents" / f"{self.name}.md"
         if brain_path.exists():
             return brain_path.read_text()
-        return f"You are the {self.name} agent for Pylon, a job-hunting platform."
+        return f"You are the {self.name} agent for JobHuntingAgents, a job-hunting platform."
 
     def _safe_parse_json(self, text: str) -> list[dict[str, Any]]:
         """Parse Claude's JSON response, stripping markdown fences if present."""

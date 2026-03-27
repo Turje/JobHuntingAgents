@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pylon"
+name = "jobhuntingagents"
 version = "0.1.0"
-description = "Multi-agent job hunting platform"
+description = "JobHuntingAgents — Multi-agent job hunting platform"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

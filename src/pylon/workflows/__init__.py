@@ -1,1 +1,1 @@
-"""Pylon workflows — Actor-Critic and Swarm engines."""
+"""JobHuntingAgents workflows — Actor-Critic and Swarm engines."""
