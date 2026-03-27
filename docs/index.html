@@ -113,7 +113,13 @@
         .session-item:hover { background: var(--surface-hover); }
         .session-item.active { background: var(--bg); border-left: 3px solid var(--accent); }
         .session-query { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-        .session-meta { display: flex; justify-content: space-between; margin-top: 3px; font-size: 0.7rem; color: var(--text-dim); }
+        .session-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; font-size: 0.7rem; color: var(--text-dim); }
+        .session-del {
+            opacity: 0; background: none; border: none; color: var(--accent-red);
+            font-size: 0.85rem; padding: 0 4px; cursor: pointer; transition: opacity 0.15s;
+        }
+        .session-item:hover .session-del { opacity: 0.7; }
+        .session-del:hover { opacity: 1 !important; }
         .badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
         .badge-running { background: rgba(210,153,34,0.2); color: var(--accent-orange); }
         .badge-completed { background: rgba(63,185,80,0.2); color: var(--accent-green); }
@@ -461,7 +467,7 @@ function renderSidebar() {
         const t = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
         return `<div class="session-item${a}" onclick="onSession('${s.run_id}')">
             <div class="session-query">${esc(s.query)}</div>
-            <div class="session-meta"><span>${t}</span><span class="badge badge-${s.status}">${s.status}</span></div>
+            <div class="session-meta"><span>${t}</span><span class="badge badge-${s.status}">${s.status}</span><button class="session-del" onclick="onDeleteSession(event,'${s.run_id}')" title="Delete">&#x2715;</button></div>
         </div>`;
     }).join('');
 }
@@ -696,6 +702,17 @@ async function onApprove(evt, draftId) {
         await json(`/sessions/${S.runId}/approve-draft/${draftId}`, { method: 'POST' });
         toast('Draft approved', 'success'); await loadData(S.runId);
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+async function onDeleteSession(evt, rid) {
+    evt.stopPropagation();
+    if (!confirm('Delete this search session?')) return;
+    try {
+        await api(`/sessions/${rid}`, { method: 'DELETE' });
+        S.sessions = S.sessions.filter(s => s.run_id !== rid);
+        if (S.runId === rid) { S.runId = null; S.data = { companies:[], profiles:[], skills:[], contacts:[], resumes:[], drafts:[] }; }
+        toast('Session deleted', 'success'); render();
+    } catch (e) { toast('Delete failed: ' + e.message, 'error'); }
 }
 
 async function onDownloadExcel() {

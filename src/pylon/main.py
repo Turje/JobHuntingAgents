@@ -151,6 +151,15 @@ async def get_session(run_id: str) -> JSONResponse:
     return JSONResponse(session)
 
 
+@app.delete("/sessions/{run_id}")
+async def delete_session(run_id: str) -> JSONResponse:
+    """Delete a session and all its data."""
+    deleted = await _store.delete_session(run_id)
+    if not deleted:
+        return JSONResponse({"error": "Session not found"}, status_code=404)
+    return JSONResponse({"status": "deleted", "run_id": run_id})
+
+
 @app.get("/sessions/{run_id}/companies")
 async def get_companies(run_id: str) -> JSONResponse:
     """Get discovered companies for a session."""

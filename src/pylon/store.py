@@ -241,6 +241,22 @@ class SessionStore:
             )
             await db.commit()
 
+    async def delete_session(self, run_id: str) -> bool:
+        """Delete a session and all its related data. Returns True if found."""
+        async with aiosqlite.connect(self.db_path) as db:
+            # Check session exists
+            async with db.execute(
+                "SELECT run_id FROM sessions WHERE run_id = ?", (run_id,)
+            ) as cursor:
+                if not await cursor.fetchone():
+                    return False
+            # Delete all related data
+            for table in ("companies", "contacts", "drafts", "profiles", "skills", "resumes", "events"):
+                await db.execute(f"DELETE FROM {table} WHERE run_id = ?", (run_id,))
+            await db.execute("DELETE FROM sessions WHERE run_id = ?", (run_id,))
+            await db.commit()
+            return True
+
     async def record_event(self, run_id: str, event_type: str, payload: dict[str, Any]) -> None:
         """Record a pipeline event for audit trail."""
         now = datetime.now(timezone.utc).isoformat()
