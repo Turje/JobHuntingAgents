@@ -80,3 +80,55 @@ class TestSessionStore:
     async def test_get_nonexistent_session(self, store):
         result = await store.get_session("nonexistent-id")
         assert result is None
+
+    async def test_list_sessions(self, store):
+        await store.create_session("query one", run_id="r1")
+        await store.create_session("query two", run_id="r2")
+        sessions = await store.list_sessions()
+        assert len(sessions) == 2
+        assert sessions[0]["run_id"] == "r2"  # most recent first
+
+    async def test_save_and_get_profiles(self, store):
+        run_id = await store.create_session("test")
+        profiles = [
+            {"company_name": "Acme", "r_and_d_approach": "agile"},
+            {"company_name": "Beta", "r_and_d_approach": "waterfall"},
+        ]
+        await store.save_profiles(run_id, profiles)
+        result = await store.get_profiles(run_id)
+        assert len(result) == 2
+        assert result[0]["company_name"] == "Acme"
+
+    async def test_save_and_get_skills(self, store):
+        run_id = await store.create_session("test")
+        skills = [
+            {"company_name": "Acme", "alignment_score": 0.9, "tools_used": ["python"]},
+            {"company_name": "Beta", "alignment_score": 0.6, "tools_used": ["java"]},
+        ]
+        await store.save_skills(run_id, skills)
+        result = await store.get_skills(run_id)
+        assert len(result) == 2
+        assert result[0]["alignment_score"] == 0.9  # sorted DESC
+
+    async def test_save_and_get_resumes(self, store):
+        run_id = await store.create_session("test")
+        resumes = [{"company_name": "Acme", "tailored_summary": "Expert in ML"}]
+        await store.save_resumes(run_id, resumes)
+        result = await store.get_resumes(run_id)
+        assert len(result) == 1
+        assert result[0]["company_name"] == "Acme"
+
+    async def test_get_contacts(self, store):
+        run_id = await store.create_session("test")
+        await store.save_contacts(run_id, [
+            {"company_name": "Acme", "name": "Alice", "title": "VP Eng", "email": "a@acme.com"},
+        ])
+        result = await store.get_contacts(run_id)
+        assert len(result) == 1
+        assert result[0]["name"] == "Alice"
+
+    async def test_save_excel_path(self, store):
+        run_id = await store.create_session("test")
+        await store.save_excel_path(run_id, "/tmp/report.xlsx")
+        session = await store.get_session(run_id)
+        assert session["excel_path"] == "/tmp/report.xlsx"

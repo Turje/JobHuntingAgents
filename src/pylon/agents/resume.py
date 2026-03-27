@@ -29,28 +29,69 @@ class ResumeAgent(BaseAnalysisAgent):
 
     def run(self, context: PipelineContext) -> RouterContract:
         """Tailor resumes for all companies. Populates context.resumes."""
+        if not context.candidates:
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=0.0,
+                kb_update_notes="No companies to tailor resumes for",
+            )
+
+        companies_data = []
+        for c in context.candidates:
+            entry = {"company_name": c.name, "relevance": c.relevance_reason}
+            profile = next((p for p in context.profiles if p.company_name == c.name), None)
+            if profile:
+                entry["ml_use_cases"] = profile.ml_use_cases
+                entry["culture"] = profile.culture
+            skill = next((s for s in context.skills if s.company_name == c.name), None)
+            if skill:
+                entry["tools_used"] = skill.tools_used
+                entry["alignment_score"] = skill.alignment_score
+            companies_data.append(entry)
+
+        if self._use_dspy:
+            return self._run_dspy(context, companies_data)
+        return self._run_claude(context, companies_data)
+
+    def _run_dspy(
+        self, context: PipelineContext, companies_data: list
+    ) -> RouterContract:
+        """Execute resume tailoring via DSPy module."""
         try:
-            if not context.candidates:
-                return RouterContract(
-                    status=ContractStatus.EXECUTED,
-                    confidence=0.0,
-                    kb_update_notes="No companies to tailor resumes for",
-                )
+            from pylon.dspy_.modules import ResumeModule
 
+            module = ResumeModule()
+            prediction = module(
+                query=context.query,
+                companies_json=json.dumps(companies_data),
+            )
+
+            resumes = self._parse_resumes(prediction.resumes_json)
+            context.resumes = resumes
+
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=min(85.0, len(resumes) * 8.0),
+                critical_issues=0 if resumes else 1,
+                blocking=False,
+                kb_update_notes=f"Tailored {len(resumes)} resume versions (DSPy)",
+            )
+        except Exception as exc:
+            self.logger.error("ResumeAgent._run_dspy failed: %s", exc)
+            return RouterContract(
+                status=ContractStatus.BLOCKED,
+                confidence=0.0,
+                critical_issues=1,
+                blocking=True,
+                kb_update_notes=f"Resume tailoring (DSPy) failed: {exc}",
+            )
+
+    def _run_claude(
+        self, context: PipelineContext, companies_data: list
+    ) -> RouterContract:
+        """Execute resume tailoring via direct ClaudeClient call."""
+        try:
             system_prompt = self._load_brain()
-
-            companies_data = []
-            for c in context.candidates:
-                entry = {"company_name": c.name, "relevance": c.relevance_reason}
-                profile = next((p for p in context.profiles if p.company_name == c.name), None)
-                if profile:
-                    entry["ml_use_cases"] = profile.ml_use_cases
-                    entry["culture"] = profile.culture
-                skill = next((s for s in context.skills if s.company_name == c.name), None)
-                if skill:
-                    entry["tools_used"] = skill.tools_used
-                    entry["alignment_score"] = skill.alignment_score
-                companies_data.append(entry)
 
             user_message = (
                 f"Tailor resume content for a job seeker interested in: {context.query}\n\n"

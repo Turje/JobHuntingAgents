@@ -11,11 +11,17 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from pathlib import Path
 
-from pylon.config import HOST, PORT
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+
+from pylon.config import DSPY_ENABLED, HOST, PORT
 from pylon.store import SessionStore
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_DASHBOARD_HTML = _PROJECT_ROOT / "docs" / "index.html"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s | %(levelname)s | %(message)s")
 _logger = logging.getLogger("pylon.main")
@@ -40,6 +46,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 def _get_router():
     """Lazy import to avoid ClaudeClient init at module level."""
@@ -50,6 +63,19 @@ def _get_router():
 # ---------------------------------------------------------------------------
 # REST endpoints
 # ---------------------------------------------------------------------------
+
+
+@app.get("/health")
+async def health() -> JSONResponse:
+    """Health check endpoint."""
+    return JSONResponse({"status": "ok", "dspy_enabled": DSPY_ENABLED})
+
+
+@app.get("/sessions")
+async def list_sessions() -> JSONResponse:
+    """List all sessions ordered by most recent first."""
+    sessions = await _store.list_sessions()
+    return JSONResponse({"sessions": sessions})
 
 
 @app.post("/search")
@@ -80,14 +106,28 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
                 await _store.save_companies(
                     run_id, [c.model_dump() for c in ctx.candidates]
                 )
+            if ctx.profiles:
+                await _store.save_profiles(
+                    run_id, [p.model_dump() for p in ctx.profiles]
+                )
+            if ctx.skills:
+                await _store.save_skills(
+                    run_id, [s.model_dump() for s in ctx.skills]
+                )
             if ctx.contacts:
                 await _store.save_contacts(
                     run_id, [c.model_dump() for c in ctx.contacts]
+                )
+            if ctx.resumes:
+                await _store.save_resumes(
+                    run_id, [r.model_dump() for r in ctx.resumes]
                 )
             if ctx.drafts:
                 await _store.save_drafts(
                     run_id, [d.model_dump() for d in ctx.drafts]
                 )
+            if ctx.excel_path:
+                await _store.save_excel_path(run_id, ctx.excel_path)
 
             await _store.end_session(run_id, "completed")
             await _broadcast(run_id, "complete", contract.model_dump())
@@ -132,6 +172,50 @@ async def approve_draft(run_id: str, draft_id: int) -> JSONResponse:
     return JSONResponse({"status": "approved", "draft_id": draft_id})
 
 
+@app.get("/sessions/{run_id}/contacts")
+async def get_contacts(run_id: str) -> JSONResponse:
+    """Get contacts for a session."""
+    contacts = await _store.get_contacts(run_id)
+    return JSONResponse({"contacts": contacts})
+
+
+@app.get("/sessions/{run_id}/skills")
+async def get_skills(run_id: str) -> JSONResponse:
+    """Get skills analyses for a session."""
+    skills = await _store.get_skills(run_id)
+    return JSONResponse({"skills": skills})
+
+
+@app.get("/sessions/{run_id}/profiles")
+async def get_profiles(run_id: str) -> JSONResponse:
+    """Get company research profiles for a session."""
+    profiles = await _store.get_profiles(run_id)
+    return JSONResponse({"profiles": profiles})
+
+
+@app.get("/sessions/{run_id}/resumes")
+async def get_resumes(run_id: str) -> JSONResponse:
+    """Get tailored resumes for a session."""
+    resumes = await _store.get_resumes(run_id)
+    return JSONResponse({"resumes": resumes})
+
+
+@app.get("/sessions/{run_id}/excel")
+async def get_excel(run_id: str):
+    """Download the Excel report for a session."""
+    session = await _store.get_session(run_id)
+    if not session:
+        return JSONResponse({"error": "Session not found"}, status_code=404)
+    excel_path = session.get("excel_path", "")
+    if not excel_path or not Path(excel_path).is_file():
+        return JSONResponse({"error": "Excel file not available"}, status_code=404)
+    return FileResponse(
+        excel_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=Path(excel_path).name,
+    )
+
+
 # ---------------------------------------------------------------------------
 # WebSocket for live progress
 # ---------------------------------------------------------------------------
@@ -172,6 +256,17 @@ def _schedule_broadcast(run_id: str, event: str, data: Any) -> None:
             asyncio.ensure_future(_broadcast(run_id, event, data))
     except RuntimeError:
         pass
+
+
+# ---------------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------------
+
+
+@app.get("/", include_in_schema=False)
+async def dashboard():
+    """Serve the operational dashboard."""
+    return FileResponse(_DASHBOARD_HTML, media_type="text/html")
 
 
 # ---------------------------------------------------------------------------

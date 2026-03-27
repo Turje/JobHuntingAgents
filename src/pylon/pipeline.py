@@ -9,6 +9,7 @@ import logging
 from typing import Any, Callable, Optional
 
 from pylon.agents.discovery import DiscoveryAgent
+from pylon.config import DSPY_ENABLED
 from pylon.models import ContractStatus, PipelineContext, RouterContract
 
 _logger = logging.getLogger("pipeline")
@@ -22,6 +23,14 @@ class FullSearchPipeline:
     """
 
     def __init__(self) -> None:
+        if DSPY_ENABLED:
+            try:
+                from pylon.dspy_.lm import configure_dspy
+                configure_dspy()
+                _logger.info("DSPy configured for pipeline")
+            except Exception as exc:
+                _logger.warning("DSPy configuration failed, falling back to Claude: %s", exc)
+
         self.discovery = DiscoveryAgent()
         # Layer 2+ agents are lazily imported when needed
         self._research = None

@@ -28,6 +28,11 @@ class SessionStore:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA journal_mode=WAL")
             await db.executescript(_SCHEMA)
+            # Migrate: add excel_path to sessions if missing
+            try:
+                await db.execute("ALTER TABLE sessions ADD COLUMN excel_path TEXT DEFAULT ''")
+            except Exception:
+                pass  # column already exists
             await db.commit()
 
     async def create_session(self, query: str, run_id: str | None = None) -> str:
@@ -145,6 +150,97 @@ class SessionStore:
             )
             await db.commit()
 
+    async def list_sessions(self) -> list[dict[str, Any]]:
+        """List all sessions ordered by created_at DESC."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM sessions ORDER BY created_at DESC"
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def save_profiles(self, run_id: str, profiles: list[dict[str, Any]]) -> None:
+        """Save company profiles for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            for p in profiles:
+                await db.execute(
+                    "INSERT INTO profiles (run_id, company_name, data_json) VALUES (?, ?, ?)",
+                    (run_id, p.get("company_name", ""), json.dumps(p)),
+                )
+            await db.commit()
+
+    async def get_profiles(self, run_id: str) -> list[dict[str, Any]]:
+        """Get all profiles for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM profiles WHERE run_id = ?", (run_id,)
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def save_skills(self, run_id: str, skills: list[dict[str, Any]]) -> None:
+        """Save skills analyses for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            for s in skills:
+                await db.execute(
+                    "INSERT INTO skills (run_id, company_name, alignment_score, data_json) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        run_id,
+                        s.get("company_name", ""),
+                        s.get("alignment_score", 0.0),
+                        json.dumps(s),
+                    ),
+                )
+            await db.commit()
+
+    async def get_skills(self, run_id: str) -> list[dict[str, Any]]:
+        """Get all skills analyses for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM skills WHERE run_id = ? ORDER BY alignment_score DESC",
+                (run_id,),
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def save_resumes(self, run_id: str, resumes: list[dict[str, Any]]) -> None:
+        """Save tailored resumes for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            for r in resumes:
+                await db.execute(
+                    "INSERT INTO resumes (run_id, company_name, data_json) VALUES (?, ?, ?)",
+                    (run_id, r.get("company_name", ""), json.dumps(r)),
+                )
+            await db.commit()
+
+    async def get_resumes(self, run_id: str) -> list[dict[str, Any]]:
+        """Get all resumes for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM resumes WHERE run_id = ?", (run_id,)
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def get_contacts(self, run_id: str) -> list[dict[str, Any]]:
+        """Get all contacts for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM contacts WHERE run_id = ?", (run_id,)
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def save_excel_path(self, run_id: str, path: str) -> None:
+        """Save the Excel export path for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                "UPDATE sessions SET excel_path = ? WHERE run_id = ?",
+                (path, run_id),
+            )
+            await db.commit()
+
     async def record_event(self, run_id: str, event_type: str, payload: dict[str, Any]) -> None:
         """Record a pipeline event for audit trail."""
         now = datetime.now(timezone.utc).isoformat()
@@ -202,6 +298,31 @@ CREATE TABLE IF NOT EXISTS drafts (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT NOT NULL REFERENCES sessions(run_id),
+    company_name TEXT NOT NULL,
+    data_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS skills (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT NOT NULL REFERENCES sessions(run_id),
+    company_name TEXT NOT NULL,
+    alignment_score REAL DEFAULT 0.0,
+    data_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS resumes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT NOT NULL REFERENCES sessions(run_id),
+    company_name TEXT NOT NULL,
+    data_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL REFERENCES sessions(run_id),
@@ -214,4 +335,7 @@ CREATE INDEX IF NOT EXISTS idx_companies_run ON companies(run_id);
 CREATE INDEX IF NOT EXISTS idx_contacts_run ON contacts(run_id);
 CREATE INDEX IF NOT EXISTS idx_drafts_run ON drafts(run_id);
 CREATE INDEX IF NOT EXISTS idx_events_run ON events(run_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_run ON profiles(run_id);
+CREATE INDEX IF NOT EXISTS idx_skills_run ON skills(run_id);
+CREATE INDEX IF NOT EXISTS idx_resumes_run ON resumes(run_id);
 """

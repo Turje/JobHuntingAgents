@@ -9,7 +9,9 @@ import json
 import logging
 
 from pylon.agents.base import BaseAnalysisAgent
+from pylon.config import TAVILY_API_KEY
 from pylon.core.claude_client import ClaudeClient
+from pylon.engine.search import WebSearchEngine
 from pylon.models import (
     ContactInfo,
     ContractStatus,
@@ -25,29 +27,96 @@ class ContactAgent(BaseAnalysisAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="contact")
+        self.search = WebSearchEngine(TAVILY_API_KEY)
         self.logger = logging.getLogger("agent.contact")
 
     def run(self, context: PipelineContext) -> RouterContract:
         """Find contacts for all candidates. Populates context.contacts."""
-        try:
-            companies = context.profiles or [
-                type("P", (), {"company_name": c.name})() for c in context.candidates
-            ]
-            if not companies:
-                return RouterContract(
-                    status=ContractStatus.EXECUTED,
-                    confidence=0.0,
-                    kb_update_notes="No companies to find contacts for",
-                )
+        companies = context.profiles or [
+            type("P", (), {"company_name": c.name})() for c in context.candidates
+        ]
+        if not companies:
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=0.0,
+                kb_update_notes="No companies to find contacts for",
+            )
 
+        companies_data = [
+            {"company_name": getattr(c, "company_name", "Unknown")}
+            for c in companies
+        ]
+
+        web_context = ""
+        if self.search.is_available:
+            snippets = []
+            for c in companies:
+                name = getattr(c, "company_name", "Unknown")
+                snippet = self.search.search_context(
+                    f"{name} CTO VP Engineering Head of Data Science",
+                    max_results=3,
+                )
+                if snippet:
+                    snippets.append(f"### {name}\n{snippet}")
+            web_context = "\n\n".join(snippets)
+
+        if self._use_dspy:
+            return self._run_dspy(context, companies_data, web_context)
+        return self._run_claude(context, companies_data, web_context)
+
+    def _run_dspy(
+        self, context: PipelineContext, companies_data: list, web_context: str
+    ) -> RouterContract:
+        """Execute contact search via DSPy module."""
+        try:
+            from pylon.dspy_.modules import ContactModule
+
+            module = ContactModule()
+            prediction = module(
+                query=context.query,
+                companies_json=json.dumps(companies_data),
+                web_context=web_context,
+            )
+
+            contacts = self._parse_contacts(prediction.contacts_json)
+            context.contacts = contacts
+
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=min(85.0, len(contacts) * 10.0),
+                critical_issues=0 if contacts else 1,
+                blocking=False,
+                kb_update_notes=f"Found {len(contacts)} contacts (DSPy)",
+            )
+        except Exception as exc:
+            self.logger.error("ContactAgent._run_dspy failed: %s", exc)
+            return RouterContract(
+                status=ContractStatus.BLOCKED,
+                confidence=0.0,
+                critical_issues=1,
+                blocking=True,
+                kb_update_notes=f"Contact search (DSPy) failed: {exc}",
+            )
+
+    def _run_claude(
+        self, context: PipelineContext, companies_data: list, web_context: str
+    ) -> RouterContract:
+        """Execute contact search via direct ClaudeClient call."""
+        try:
             system_prompt = self._load_brain()
-            companies_data = [
-                {"company_name": getattr(c, "company_name", "Unknown")}
-                for c in companies
-            ]
+
+            web_preamble = ""
+            if web_context:
+                web_preamble = (
+                    "Here is real web data about decision-makers at these companies:\n"
+                    f"{web_context}\n\n"
+                    "Using this real data plus your knowledge, find "
+                )
+            else:
+                web_preamble = "Find "
 
             user_message = (
-                f"Find decision-makers for DS/ML hiring at these companies.\n"
+                f"{web_preamble}decision-makers for DS/ML hiring at these companies.\n"
                 f"Context: {context.query}\n\n"
                 f"Companies:\n{json.dumps(companies_data, indent=2)}\n\n"
                 "Return a JSON array with one contact per company.\n"

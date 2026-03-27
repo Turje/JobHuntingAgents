@@ -1,11 +1,12 @@
 """Tests for src/pylon/agents/discovery.py — DiscoveryAgent."""
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 
 from pylon.agents.discovery import DiscoveryAgent
+from pylon.engine.search import WebSearchEngine
 from pylon.models import (
     ContractStatus,
     IndustryDomain,
@@ -122,3 +123,32 @@ class TestDiscoveryAgent:
         agent.client.call.return_value = response
         agent.run(context)
         assert context.candidates[0].confidence == 1.0
+
+    def test_run_with_web_search(self, agent, context):
+        mock_search = MagicMock(spec=WebSearchEngine)
+        mock_search.is_available = True
+        mock_search.search_context.return_value = (
+            "[Acme CV](https://acme.com)\nComputer vision company hiring"
+        )
+        agent.search = mock_search
+
+        contract = agent.run(context)
+        assert contract.status == ContractStatus.EXECUTED
+        # Verify web search results were included in the prompt
+        call_args = agent.client.call.call_args
+        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        assert "real web search data" in user_msg
+        assert "Acme CV" in user_msg
+
+    def test_run_without_web_search_fallback(self, agent, context):
+        mock_search = MagicMock(spec=WebSearchEngine)
+        mock_search.is_available = False
+        agent.search = mock_search
+
+        contract = agent.run(context)
+        assert contract.status == ContractStatus.EXECUTED
+        # Should still work — just no web data in prompt
+        call_args = agent.client.call.call_args
+        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        assert "real web search data" not in user_msg
+        assert len(context.candidates) == 3

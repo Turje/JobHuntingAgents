@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobHuntingAgents — Multi-Agent Job Hunting Platform</title>
+    <title>JobHuntingAgents</title>
     <style>
         :root {
             --bg: #0d1117;
             --surface: #161b22;
+            --surface-hover: #1c2129;
+            --surface-raised: #1e252e;
             --border: #30363d;
+            --border-light: #3d444d;
             --text: #e6edf3;
             --text-muted: #8b949e;
+            --text-dim: #656d76;
             --accent: #58a6ff;
             --accent-green: #3fb950;
             --accent-purple: #bc8cff;
             --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --accent-teal: #39d2c0;
+            --radius: 10px;
+            --radius-sm: 6px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -22,289 +30,709 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            min-height: 100vh;
         }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        button { cursor: pointer; font-family: inherit; }
+        input { font-family: inherit; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
-        /* Header */
-        header {
-            padding: 48px 0 32px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-        header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
-        header h1 span { color: var(--accent); }
-        header p.tagline {
-            color: var(--text-muted);
-            font-size: 1.25rem;
-            margin-top: 12px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .badge {
-            display: inline-block;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-size: 0.85rem;
-            color: var(--accent);
-            margin-top: 20px;
-        }
-
-        /* Features */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 48px 0;
-        }
-        .feature {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-        }
-        .feature h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-        .feature h3 .icon { margin-right: 8px; }
-        .feature p { color: var(--text-muted); font-size: 0.95rem; }
-
-        /* Pipeline */
-        .pipeline-section {
-            padding: 48px 0;
-            border-top: 1px solid var(--border);
-        }
-        .pipeline-section h2 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 32px;
-        }
-        .pipeline {
+        /* ---- HEADER ---- */
+        .header {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
             align-items: center;
-        }
-        .step {
+            justify-content: space-between;
+            padding: 10px 24px;
+            border-bottom: 1px solid var(--border);
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px 20px;
-            text-align: center;
-            min-width: 130px;
-        }
-        .step .num {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            line-height: 28px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: var(--bg);
-            font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-        }
-        .step .label { font-weight: 600; font-size: 0.95rem; }
-        .step .desc { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
-        .arrow {
-            color: var(--text-muted);
-            font-size: 1.5rem;
-        }
-
-        /* Architecture */
-        .arch-section {
-            padding: 48px 0;
-            border-top: 1px solid var(--border);
-        }
-        .arch-section h2 { text-align: center; font-size: 2rem; margin-bottom: 32px; }
-        .arch-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
         }
-        .arch-item {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-title { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+        .connect-bar { display: flex; align-items: center; gap: 8px; }
+        .connect-bar input {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            padding: 5px 10px; width: 200px; font-size: 0.8rem;
         }
-        .arch-item h4 { color: var(--accent-purple); margin-bottom: 6px; }
-        .arch-item p { color: var(--text-muted); font-size: 0.9rem; }
+        .connect-bar button {
+            background: var(--accent); color: var(--bg); border: none;
+            border-radius: var(--radius-sm); padding: 5px 14px;
+            font-size: 0.8rem; font-weight: 600;
+        }
+        .status-dot {
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--accent-red); flex-shrink: 0;
+        }
+        .status-dot.connected { background: var(--accent-green); }
+        .status-dot.connecting { background: var(--accent-orange); }
+        .mode-badge {
+            font-size: 0.65rem; padding: 2px 8px; border-radius: 10px;
+            font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase;
+        }
+        .mode-badge.dspy { background: rgba(188,140,255,0.2); color: var(--accent-purple); }
+        .mode-badge.claude { background: rgba(88,166,255,0.15); color: var(--accent); }
 
-        /* Tech Stack */
-        .tech-section {
-            padding: 48px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
+        /* ---- SEARCH ---- */
+        .search-section {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex; gap: 10px;
+            max-width: 900px; margin: 0 auto; width: 100%;
         }
-        .tech-section h2 { font-size: 2rem; margin-bottom: 24px; }
-        .tech-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
+        .search-section input {
+            flex: 1; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); color: var(--text);
+            padding: 12px 18px; font-size: 1rem;
         }
-        .tech-tag {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            color: var(--accent-green);
+        .search-section input:focus { outline: none; border-color: var(--accent); }
+        .search-section button {
+            background: var(--accent-green); color: var(--bg); border: none;
+            border-radius: var(--radius); padding: 12px 28px;
+            font-weight: 700; font-size: 1rem; white-space: nowrap;
         }
+        .search-section button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* Footer */
-        footer {
-            padding: 32px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
+        /* ---- LAYOUT ---- */
+        .main { display: flex; height: calc(100vh - 114px); }
+
+        /* ---- SIDEBAR ---- */
+        .sidebar {
+            width: 240px; min-width: 240px; border-right: 1px solid var(--border);
+            overflow-y: auto; background: var(--surface);
+        }
+        .sidebar-header {
+            padding: 10px 14px; font-size: 0.75rem; font-weight: 600;
+            color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .session-item {
+            padding: 9px 14px; border-bottom: 1px solid var(--border);
+            cursor: pointer; font-size: 0.82rem; transition: background 0.1s;
+        }
+        .session-item:hover { background: var(--surface-hover); }
+        .session-item.active { background: var(--bg); border-left: 3px solid var(--accent); }
+        .session-query { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+        .session-meta { display: flex; justify-content: space-between; margin-top: 3px; font-size: 0.7rem; color: var(--text-dim); }
+        .badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+        .badge-running { background: rgba(210,153,34,0.2); color: var(--accent-orange); }
+        .badge-completed { background: rgba(63,185,80,0.2); color: var(--accent-green); }
+        .badge-failed { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+        /* ---- CONTENT ---- */
+        .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+        /* ---- STEPPER ---- */
+        .stepper {
+            display: flex; align-items: center; gap: 0;
+            padding: 14px 18px; background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            margin-bottom: 20px; overflow-x: auto;
+        }
+        .step-node { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 70px; }
+        .step-circle {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 2px solid var(--border); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 700; color: var(--text-dim); transition: all 0.3s;
+        }
+        .step-circle.active { border-color: var(--accent-orange); color: var(--accent-orange); animation: pulse 1.5s infinite; }
+        .step-circle.done { border-color: var(--accent-green); background: var(--accent-green); color: var(--bg); }
+        .step-label { font-size: 0.65rem; color: var(--text-dim); }
+        .step-conn { flex: 1; height: 2px; background: var(--border); min-width: 12px; }
+        .step-conn.done { background: var(--accent-green); }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(210,153,34,.4); } 50% { box-shadow: 0 0 0 5px rgba(210,153,34,0); } }
+
+        /* ---- STATS BAR ---- */
+        .stats-bar {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-bottom: 20px; align-items: center;
+        }
+        .stat {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 8px 14px;
+            font-size: 0.82rem; display: flex; align-items: center; gap: 6px;
+        }
+        .stat-num { font-weight: 700; font-size: 1.1rem; }
+        .stat-label { color: var(--text-muted); }
+        .btn {
+            padding: 7px 16px; border: none; border-radius: var(--radius-sm);
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .btn-accent { background: var(--accent); color: var(--bg); }
+        .btn-green { background: var(--accent-green); color: var(--bg); }
+        .btn-outline {
+            background: transparent; border: 1px solid var(--border);
             color: var(--text-muted);
-            font-size: 0.9rem;
         }
-        footer a { color: var(--accent); text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
+        .btn:hover { opacity: 0.85; }
+
+        /* ---- COMPANY CARD ---- */
+        .company-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
+        }
+        .cc-header {
+            padding: 16px 20px; display: flex; align-items: flex-start;
+            justify-content: space-between; gap: 16px; cursor: pointer;
+        }
+        .cc-header:hover { background: var(--surface-hover); }
+        .cc-name { font-size: 1.1rem; font-weight: 700; }
+        .cc-meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+        .cc-tag {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;
+            font-weight: 600;
+        }
+        .cc-tag-domain { background: rgba(88,166,255,0.12); color: var(--accent); }
+        .cc-tag-conf { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+        .cc-tag-funding { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+        .cc-tag-hq { background: rgba(210,153,34,0.12); color: var(--accent-orange); }
+        .cc-tag-size { background: rgba(57,210,192,0.12); color: var(--accent-teal); }
+        .cc-reason { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+        .cc-website { color: var(--accent); font-size: 0.8rem; }
+        .cc-expand { color: var(--text-dim); font-size: 1.3rem; padding: 4px; transition: transform 0.2s; user-select: none; }
+        .cc-expand.open { transform: rotate(180deg); }
+
+        .cc-body { border-top: 1px solid var(--border); padding: 0 20px 20px; }
+        .cc-section { margin-top: 18px; }
+        .cc-section-title {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .cc-section-title .icon { font-size: 0.9rem; }
+
+        /* Research grid */
+        .research-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .rg-item { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+        .rg-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+        .rg-value { font-size: 0.85rem; }
+        .rg-list { list-style: none; padding: 0; }
+        .rg-list li { font-size: 0.82rem; padding: 1px 0; }
+        .rg-list li::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: middle; }
+        .rg-full { grid-column: 1 / -1; }
+
+        /* Skills / Tools */
+        .tools-row { display: flex; flex-wrap: wrap; gap: 5px; }
+        .tool-chip {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 4px; padding: 2px 8px; font-size: 0.78rem;
+        }
+        .tool-chip.learn { border-color: var(--accent-orange); color: var(--accent-orange); }
+        .alignment-bar {
+            height: 6px; border-radius: 3px; background: var(--bg);
+            margin-top: 6px; overflow: hidden;
+        }
+        .alignment-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+
+        /* Contact row */
+        .contact-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 12px; background: var(--bg);
+            border-radius: var(--radius-sm); margin-bottom: 6px;
+        }
+        .contact-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--surface-raised); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700; color: var(--accent-purple);
+            flex-shrink: 0;
+        }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name { font-weight: 600; font-size: 0.88rem; }
+        .contact-title { color: var(--text-muted); font-size: 0.78rem; }
+        .contact-links { display: flex; gap: 10px; font-size: 0.78rem; }
+
+        /* Outreach */
+        .outreach-card {
+            background: var(--bg); border-radius: var(--radius-sm);
+            padding: 12px; margin-top: 8px;
+        }
+        .outreach-subject { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
+        .outreach-body {
+            font-size: 0.82rem; color: var(--text-muted); white-space: pre-wrap;
+            word-break: break-word; max-height: 160px; overflow-y: auto;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 4px; padding: 10px; margin-top: 6px;
+        }
+        .outreach-actions { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+
+        /* ---- EMPTY / TOAST / OVERLAY ---- */
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+        .empty-state h3 { font-size: 1.3rem; margin-bottom: 8px; color: var(--text); }
+
+        .toast-container { position: fixed; top: 14px; right: 14px; z-index: 1000; display: flex; flex-direction: column; gap: 6px; }
+        .toast { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; animation: slideIn 0.25s ease; max-width: 340px; }
+        .toast.success { background: rgba(63,185,80,0.9); color: #fff; }
+        .toast.error { background: rgba(248,81,73,0.9); color: #fff; }
+        .toast.info { background: rgba(88,166,255,0.9); color: #fff; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .overlay { position: fixed; inset: 0; background: rgba(13,17,23,0.85); display: flex; align-items: center; justify-content: center; z-index: 500; }
+        .overlay-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; text-align: center; max-width: 400px; }
+        .overlay-box h3 { font-size: 1.15rem; margin-bottom: 10px; }
+        .overlay-box p { color: var(--text-muted); font-size: 0.88rem; }
+        .overlay-box code { display: block; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 8px; margin: 10px 0; font-size: 0.85rem; color: var(--accent-green); }
+        .hidden { display: none !important; }
 
         @media (max-width: 768px) {
-            header h1 { font-size: 2rem; }
-            .pipeline { flex-direction: column; }
-            .arrow { transform: rotate(90deg); }
+            .sidebar { display: none; }
+            .header { padding: 8px 12px; }
+            .connect-bar input { width: 140px; }
+            .research-grid { grid-template-columns: 1fr; }
+            .search-section { padding: 14px 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><span>JobHuntingAgents</span></h1>
-            <p class="tagline">Multi-agent platform that helps career changers find and apply to jobs strategically using AI-powered research, personalized outreach, and intelligent pipeline orchestration.</p>
-            <span class="badge">6 Specialized Agents &middot; Actor-Critic Workflows &middot; Swarm Research</span>
-        </header>
-
-        <section class="features">
-            <div class="feature">
-                <h3><span class="icon">&#x1F50D;</span> Smart Discovery</h3>
-                <p>Input free-text interests like "I love European football, find DS/ML companies" and get 10-15 curated company matches with relevance scores.</p>
-            </div>
-            <div class="feature">
-                <h3><span class="icon">&#x1F9E0;</span> Deep Research</h3>
-                <p>Each company is profiled with R&amp;D approach, tech stack, ML use cases, funding stage, culture, and hiring signals.</p>
-            </div>
-            <div class="feature">
-                <h3><span class="icon">&#x1F4CA;</span> Skill Gap Analysis</h3>
-                <p>Compare your skills against each company's tech stack. Get alignment scores and actionable learning paths.</p>
-            </div>
-            <div class="feature">
-                <h3><span class="icon">&#x1F4E7;</span> Personalized Outreach</h3>
-                <p>Auto-draft cold emails personalized to each company's projects, culture, and the right decision-maker.</p>
-            </div>
-            <div class="feature">
-                <h3><span class="icon">&#x1F4DD;</span> Tailored Resumes</h3>
-                <p>Resume summaries and bullet points customized per company, emphasizing relevant experience and skills.</p>
-            </div>
-            <div class="feature">
-                <h3><span class="icon">&#x1F4C8;</span> Excel Reports</h3>
-                <p>Multi-tab Excel exports with companies, skills analysis, contacts, and outreach drafts — all in one file.</p>
-            </div>
-        </section>
-
-        <section class="pipeline-section">
-            <h2>Agent Pipeline</h2>
-            <div class="pipeline">
-                <div class="step">
-                    <div class="num">1</div>
-                    <div class="label">Discovery</div>
-                    <div class="desc">Find companies</div>
-                </div>
-                <div class="arrow">&#x2192;</div>
-                <div class="step">
-                    <div class="num">2</div>
-                    <div class="label">Research</div>
-                    <div class="desc">Deep profiles</div>
-                </div>
-                <div class="arrow">&#x2192;</div>
-                <div class="step">
-                    <div class="num">3</div>
-                    <div class="label">Skills</div>
-                    <div class="desc">Gap analysis</div>
-                </div>
-                <div class="arrow">&#x2192;</div>
-                <div class="step">
-                    <div class="num">4</div>
-                    <div class="label">Contact</div>
-                    <div class="desc">Decision makers</div>
-                </div>
-                <div class="arrow">&#x2192;</div>
-                <div class="step">
-                    <div class="num">5</div>
-                    <div class="label">Resume</div>
-                    <div class="desc">Tailor per co.</div>
-                </div>
-                <div class="arrow">&#x2192;</div>
-                <div class="step">
-                    <div class="num">6</div>
-                    <div class="label">Outreach</div>
-                    <div class="desc">Draft emails</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="arch-section">
-            <h2>Architecture</h2>
-            <div class="arch-grid">
-                <div class="arch-item">
-                    <h4>Router Orchestration</h4>
-                    <p>7-priority intent classification dispatches to the right agents and workflows automatically.</p>
-                </div>
-                <div class="arch-item">
-                    <h4>Actor-Critic Loops</h4>
-                    <p>Search plans and outreach drafts go through max 3 refinement cycles for quality assurance.</p>
-                </div>
-                <div class="arch-item">
-                    <h4>Swarm Research</h4>
-                    <p>Parallel multi-company research using ThreadPoolExecutor for fast, comprehensive analysis.</p>
-                </div>
-                <div class="arch-item">
-                    <h4>Stable-Anchor Memory</h4>
-                    <p>Persistent knowledge in markdown files with safe append-after-header editing patterns.</p>
-                </div>
-                <div class="arch-item">
-                    <h4>Pydantic Contracts</h4>
-                    <p>Every agent returns a RouterContract with status, confidence, and knowledge updates.</p>
-                </div>
-                <div class="arch-item">
-                    <h4>Live WebSocket</h4>
-                    <p>Real-time pipeline progress via FastAPI WebSocket — see each step as it completes.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="tech-section">
-            <h2>Tech Stack</h2>
-            <div class="tech-tags">
-                <span class="tech-tag">Python 3.10+</span>
-                <span class="tech-tag">Pydantic v2</span>
-                <span class="tech-tag">FastAPI</span>
-                <span class="tech-tag">Claude API</span>
-                <span class="tech-tag">aiosqlite</span>
-                <span class="tech-tag">WebSockets</span>
-                <span class="tech-tag">openpyxl</span>
-                <span class="tech-tag">Gmail API</span>
-                <span class="tech-tag">pytest</span>
-                <span class="tech-tag">structlog</span>
-            </div>
-        </section>
-
-        <footer>
-            <p>Built by <a href="https://github.com/turje">turje</a> &middot; Powered by Claude &middot; <a href="https://github.com/Turje/JobHuntingAgents">GitHub</a></p>
-        </footer>
+    <div class="toast-container" id="toasts"></div>
+    <div class="overlay hidden" id="overlay">
+        <div class="overlay-box">
+            <h3>Backend Not Connected</h3>
+            <p>Start the backend server:</p>
+            <code>uvicorn pylon.main:app --reload</code>
+            <p>Then click Connect above.</p>
+        </div>
     </div>
+
+    <div class="header">
+        <div class="header-left">
+            <span class="header-title">JobHuntingAgents</span>
+        </div>
+        <div class="connect-bar">
+            <span class="mode-badge claude hidden" id="modeBadge">Claude</span>
+            <div class="status-dot" id="statusDot"></div>
+            <input type="text" id="backendUrl" placeholder="http://localhost:8000" />
+            <button onclick="onConnect()">Connect</button>
+        </div>
+    </div>
+
+    <div style="border-bottom:1px solid var(--border)">
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Find DS/ML companies in European football analytics..." onkeydown="if(event.key==='Enter')onSearch()" />
+            <button id="searchBtn" onclick="onSearch()">Search</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">Search History</div>
+            <div id="sessionList"></div>
+        </div>
+        <div class="content" id="content">
+            <div class="empty-state">
+                <h3>Ready to Search</h3>
+                <p>Enter a query above to discover companies, analyze skill fit, find decision-makers, and generate outreach.</p>
+            </div>
+        </div>
+    </div>
+
+<script>
+// =========================================================================
+// CONFIG
+// =========================================================================
+const STEPS = [
+    { key: 'discovery', label: 'Discovery' },
+    { key: 'research', label: 'Research' },
+    { key: 'skills', label: 'Skills' },
+    { key: 'contact', label: 'Contacts' },
+    { key: 'resume', label: 'Resume' },
+    { key: 'outreach', label: 'Outreach' },
+    { key: 'excel', label: 'Export' },
+];
+
+// =========================================================================
+// STATE
+// =========================================================================
+const S = {
+    url: '',
+    connected: false,
+    sessions: [],
+    runId: null,
+    ws: null,
+    steps: {},
+    expanded: {},   // companyName -> true/false
+    data: { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [] },
+};
+
+// =========================================================================
+// API
+// =========================================================================
+async function api(path, opts = {}) {
+    const r = await fetch(S.url + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    if (!r.ok) throw new Error(`${r.status}`);
+    return r;
+}
+const json = (p, o) => api(p, o).then(r => r.json());
+
+async function fetchAll(rid) {
+    const [co, pr, sk, ct, rs, dr] = await Promise.all([
+        json(`/sessions/${rid}/companies`),
+        json(`/sessions/${rid}/profiles`),
+        json(`/sessions/${rid}/skills`),
+        json(`/sessions/${rid}/contacts`),
+        json(`/sessions/${rid}/resumes`),
+        json(`/sessions/${rid}/drafts`),
+    ]);
+    return {
+        companies: co.companies || [], profiles: pr.profiles || [],
+        skills: sk.skills || [], contacts: ct.contacts || [],
+        resumes: rs.resumes || [], drafts: dr.drafts || [],
+    };
+}
+
+// =========================================================================
+// WEBSOCKET
+// =========================================================================
+function wsConnect(rid) {
+    if (S.ws) try { S.ws.close(); } catch {}
+    const ws = new WebSocket(S.url.replace(/^http/, 'ws') + '/ws/' + rid);
+    S.ws = ws;
+    ws.onmessage = e => {
+        try {
+            const m = JSON.parse(e.data);
+            for (const s of STEPS) {
+                if (m.event === s.key + '_start') { S.steps[s.key] = 'active'; render(); return; }
+                if (m.event === s.key + '_complete') { S.steps[s.key] = 'done'; loadData(S.runId); return; }
+            }
+            if (m.event === 'pipeline_complete' || m.event === 'complete') {
+                toast('Pipeline completed!', 'success'); loadData(S.runId); loadSessions();
+            }
+            if (m.event === 'error') { toast('Error: ' + (m.data?.message || ''), 'error'); loadSessions(); }
+        } catch {}
+    };
+    ws.onclose = () => { S.ws = null; };
+}
+
+// =========================================================================
+// HELPERS
+// =========================================================================
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+function jp(s) { try { return JSON.parse(s || '{}'); } catch { return {}; } }
+function initials(name) { return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
+function pct(v) { return Math.round((v || 0) * 100); }
+function toast(msg, type = 'info') {
+    const c = document.getElementById('toasts'), el = document.createElement('div');
+    el.className = 'toast ' + type; el.textContent = msg;
+    c.appendChild(el); setTimeout(() => el.remove(), 4000);
+}
+function setDot(s) {
+    const d = document.getElementById('statusDot'); d.className = 'status-dot';
+    if (s === 'connected') d.classList.add('connected');
+    else if (s === 'connecting') d.classList.add('connecting');
+}
+function setModeBadge(dspyEnabled) {
+    const b = document.getElementById('modeBadge');
+    b.classList.remove('hidden', 'dspy', 'claude');
+    if (dspyEnabled) { b.textContent = 'DSPy'; b.classList.add('dspy'); }
+    else { b.textContent = 'Claude'; b.classList.add('claude'); }
+}
+function alColor(v) {
+    if (v >= 0.7) return 'var(--accent-green)';
+    if (v >= 0.4) return 'var(--accent-orange)';
+    return 'var(--accent-red)';
+}
+function fmtDomain(d) { return (d || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+function fmtFunding(f) { return (f || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+
+// lookup helpers — join data by company name
+function profileFor(name) { return S.data.profiles.find(p => jp(p.data_json).company_name === name) || null; }
+function skillsFor(name) { return S.data.skills.find(s => s.company_name === name) || null; }
+function contactsFor(name) { return S.data.contacts.filter(c => c.company_name === name); }
+function resumeFor(name) { return S.data.resumes.find(r => r.company_name === name) || null; }
+function draftsFor(name) { return S.data.drafts.filter(d => d.company_name === name); }
+
+// =========================================================================
+// RENDER
+// =========================================================================
+function render() {
+    renderSidebar();
+    renderContent();
+}
+
+function renderSidebar() {
+    const el = document.getElementById('sessionList');
+    if (!S.sessions.length) { el.innerHTML = '<div style="padding:14px;color:var(--text-dim);font-size:0.82rem;">No searches yet</div>'; return; }
+    el.innerHTML = S.sessions.map(s => {
+        const a = s.run_id === S.runId ? ' active' : '';
+        const t = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
+        return `<div class="session-item${a}" onclick="onSession('${s.run_id}')">
+            <div class="session-query">${esc(s.query)}</div>
+            <div class="session-meta"><span>${t}</span><span class="badge badge-${s.status}">${s.status}</span></div>
+        </div>`;
+    }).join('');
+}
+
+function renderContent() {
+    const el = document.getElementById('content');
+    if (!S.runId) {
+        el.innerHTML = `<div class="empty-state"><h3>Ready to Search</h3><p>Enter a query above to discover companies, analyze skill fit, find decision-makers, and generate outreach.</p></div>`;
+        return;
+    }
+
+    let html = renderStepper();
+    html += renderStats();
+
+    // Render each company as a rich card
+    if (S.data.companies.length) {
+        S.data.companies.forEach(c => { html += renderCompanyCard(c); });
+    } else {
+        html += '<div class="empty-state" style="padding:40px"><p>Waiting for results...</p></div>';
+    }
+
+    el.innerHTML = html;
+}
+
+function renderStepper() {
+    let h = '<div class="stepper">';
+    STEPS.forEach((s, i) => {
+        const st = S.steps[s.key] || '';
+        h += `<div class="step-node"><div class="step-circle ${st}">${i+1}</div><div class="step-label">${s.label}</div></div>`;
+        if (i < STEPS.length - 1) h += `<div class="step-conn${st === 'done' ? ' done' : ''}"></div>`;
+    });
+    return h + '</div>';
+}
+
+function renderStats() {
+    const d = S.data;
+    const nCo = d.companies.length, nPr = d.profiles.length, nSk = d.skills.length;
+    const nCt = d.contacts.length, nDr = d.drafts.length;
+    if (!nCo) return '';
+    let h = '<div class="stats-bar">';
+    h += `<div class="stat"><span class="stat-num">${nCo}</span><span class="stat-label">Companies</span></div>`;
+    if (nPr) h += `<div class="stat"><span class="stat-num">${nPr}</span><span class="stat-label">Profiled</span></div>`;
+    if (nSk) h += `<div class="stat"><span class="stat-num">${nSk}</span><span class="stat-label">Analyzed</span></div>`;
+    if (nCt) h += `<div class="stat"><span class="stat-num">${nCt}</span><span class="stat-label">Contacts</span></div>`;
+    if (nDr) h += `<div class="stat"><span class="stat-num">${nDr}</span><span class="stat-label">Drafts</span></div>`;
+    h += `<button class="btn btn-accent" onclick="onDownloadExcel()" style="margin-left:auto">Download Excel</button>`;
+    h += '</div>';
+    return h;
+}
+
+function renderCompanyCard(c) {
+    const d = jp(c.data_json);
+    const name = c.name;
+    const open = S.expanded[name];
+    const prof = profileFor(name);
+    const pd = prof ? jp(prof.data_json) : {};
+    const sk = skillsFor(name);
+    const sd = sk ? jp(sk.data_json) : {};
+    const cts = contactsFor(name);
+    const resume = resumeFor(name);
+    const rd = resume ? jp(resume.data_json) : {};
+    const drs = draftsFor(name);
+
+    let h = `<div class="company-card">`;
+
+    // Header
+    h += `<div class="cc-header" onclick="toggleCompany('${esc(name)}')">`;
+    h += `<div>`;
+    h += `<div class="cc-name">${esc(name)}</div>`;
+    h += `<div class="cc-meta">`;
+    if (c.domain || d.domain) h += `<span class="cc-tag cc-tag-domain">${fmtDomain(c.domain || d.domain)}</span>`;
+    h += `<span class="cc-tag cc-tag-conf">${pct(c.confidence)}% match</span>`;
+    if (pd.funding_stage && pd.funding_stage !== 'unknown') h += `<span class="cc-tag cc-tag-funding">${fmtFunding(pd.funding_stage)}</span>`;
+    if (pd.headquarters) h += `<span class="cc-tag cc-tag-hq">${esc(pd.headquarters)}</span>`;
+    if (pd.employee_count) h += `<span class="cc-tag cc-tag-size">${esc(pd.employee_count)} emp</span>`;
+    h += `</div>`;
+    if (d.relevance_reason) h += `<div class="cc-reason">${esc(d.relevance_reason)}</div>`;
+    if (c.website) h += `<div class="cc-website">${esc(c.website)}</div>`;
+    h += `</div>`;
+    h += `<div class="cc-expand${open ? ' open' : ''}">&#9660;</div>`;
+    h += `</div>`;
+
+    // Body (expanded)
+    if (open) {
+        h += `<div class="cc-body">`;
+
+        // ---- RESEARCH ----
+        if (Object.keys(pd).length > 1) {
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#128269;</span> Research</div>`;
+            h += `<div class="research-grid">`;
+            if (pd.r_and_d_approach) h += `<div class="rg-item rg-full"><div class="rg-label">R&D Approach</div><div class="rg-value">${esc(pd.r_and_d_approach)}</div></div>`;
+            if (pd.culture) h += `<div class="rg-item"><div class="rg-label">Culture</div><div class="rg-value">${esc(pd.culture)}</div></div>`;
+            if (pd.engineering_blog) h += `<div class="rg-item"><div class="rg-label">Eng Blog</div><div class="rg-value"><a href="${esc(pd.engineering_blog)}" target="_blank">${esc(pd.engineering_blog)}</a></div></div>`;
+            if (pd.ml_use_cases?.length) h += `<div class="rg-item"><div class="rg-label">ML Use Cases</div><ul class="rg-list">${pd.ml_use_cases.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            if (pd.notable_clients?.length) h += `<div class="rg-item"><div class="rg-label">Notable Clients</div><ul class="rg-list">${pd.notable_clients.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            if (pd.hiring_signals?.length) h += `<div class="rg-item rg-full"><div class="rg-label">Hiring Signals</div><ul class="rg-list">${pd.hiring_signals.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            h += `</div></div>`;
+        }
+
+        // ---- SKILLS / YOUR FIT ----
+        if (sk) {
+            const score = sk.alignment_score || sd.alignment_score || 0;
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#127919;</span> Your Fit &mdash; ${pct(score)}% alignment</div>`;
+            h += `<div class="alignment-bar"><div class="alignment-fill" style="width:${pct(score)}%;background:${alColor(score)}"></div></div>`;
+            if (sd.tools_used?.length || sd.ml_frameworks?.length) {
+                h += `<div style="margin-top:10px"><div class="rg-label">Their Stack</div><div class="tools-row">`;
+                (sd.tools_used || []).concat(sd.ml_frameworks || []).forEach(t => { h += `<span class="tool-chip">${esc(t)}</span>`; });
+                h += `</div></div>`;
+            }
+            if (sd.cloud_platform) h += `<div style="margin-top:6px"><div class="rg-label">Cloud</div><span class="tool-chip">${esc(sd.cloud_platform)}</span></div>`;
+            if (sd.skills_to_learn?.length) {
+                h += `<div style="margin-top:10px"><div class="rg-label">Skills to Build</div><div class="tools-row">`;
+                sd.skills_to_learn.forEach(t => { h += `<span class="tool-chip learn">${esc(t)}</span>`; });
+                h += `</div></div>`;
+            }
+            if (sd.gap_analysis) h += `<div style="margin-top:8px;font-size:0.84rem;color:var(--text-muted)">${esc(sd.gap_analysis)}</div>`;
+            h += `</div>`;
+        }
+
+        // ---- CONTACTS / MANAGEMENT ----
+        if (cts.length) {
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#128101;</span> Management & Contacts</div>`;
+            cts.forEach(ct => {
+                h += `<div class="contact-row">`;
+                h += `<div class="contact-avatar">${initials(ct.name)}</div>`;
+                h += `<div class="contact-info"><div class="contact-name">${esc(ct.name)}</div><div class="contact-title">${esc(ct.title)}</div></div>`;
+                h += `<div class="contact-links">`;
+                if (ct.email) h += `<a href="mailto:${esc(ct.email)}">${esc(ct.email)}</a>`;
+                if (ct.linkedin_url) h += `<a href="${esc(ct.linkedin_url)}" target="_blank">LinkedIn</a>`;
+                h += `</div></div>`;
+            });
+            h += `</div>`;
+        }
+
+        // ---- TAILORED RESUME ----
+        if (resume) {
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#128196;</span> Tailored Resume</div>`;
+            if (rd.tailored_summary) h += `<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">${esc(rd.tailored_summary)}</div>`;
+            if (rd.emphasis_areas?.length) {
+                h += `<div class="tools-row" style="margin-bottom:6px">`;
+                rd.emphasis_areas.forEach(a => { h += `<span class="tool-chip">${esc(a)}</span>`; });
+                h += `</div>`;
+            }
+            if (rd.tailored_bullets?.length) {
+                h += `<ul style="padding-left:16px;font-size:0.84rem;color:var(--text-muted)">`;
+                rd.tailored_bullets.forEach(b => { h += `<li style="margin-bottom:3px">${esc(b)}</li>`; });
+                h += `</ul>`;
+            }
+            h += `</div>`;
+        }
+
+        // ---- OUTREACH DRAFTS ----
+        if (drs.length) {
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#9993;</span> Outreach</div>`;
+            drs.forEach(dr => {
+                const isDraft = dr.status === 'draft';
+                h += `<div class="outreach-card">`;
+                h += `<div style="display:flex;justify-content:space-between;align-items:center">`;
+                h += `<div class="outreach-subject">${esc(dr.subject || 'No subject')}</div>`;
+                h += `<span class="badge badge-${isDraft ? 'running' : 'completed'}">${dr.status}</span>`;
+                h += `</div>`;
+                if (dr.contact_name) h += `<div style="font-size:0.78rem;color:var(--text-dim)">To: ${esc(dr.contact_name)}</div>`;
+                h += `<div class="outreach-body">${esc(dr.body)}</div>`;
+                if (isDraft) h += `<div class="outreach-actions"><button class="btn btn-green" onclick="onApprove(event,${dr.id})">Approve Draft</button></div>`;
+                h += `</div>`;
+            });
+            h += `</div>`;
+        }
+
+        h += `</div>`; // cc-body
+    }
+
+    h += `</div>`; // company-card
+    return h;
+}
+
+// =========================================================================
+// EVENTS
+// =========================================================================
+async function onConnect() {
+    let url = document.getElementById('backendUrl').value.trim() || 'http://localhost:8000';
+    url = url.replace(/\/+$/, '');
+    document.getElementById('backendUrl').value = url;
+    S.url = url; localStorage.setItem('jha_url', url);
+    setDot('connecting');
+    try {
+        const d = await json('/health');
+        if (d.status === 'ok') {
+            S.connected = true; setDot('connected');
+            setModeBadge(d.dspy_enabled);
+            document.getElementById('overlay').classList.add('hidden');
+            toast('Connected', 'success'); await loadSessions();
+        } else throw 0;
+    } catch { S.connected = false; setDot('disconnected'); document.getElementById('overlay').classList.remove('hidden'); toast('Cannot reach backend', 'error'); }
+}
+
+async function onSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q || !S.connected) return;
+    document.getElementById('searchBtn').disabled = true;
+    try {
+        const r = await json('/search', { method: 'POST', body: JSON.stringify({ query: q }) });
+        S.runId = r.run_id; S.steps = {}; S.expanded = {};
+        S.data = { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [] };
+        toast('Search started', 'info');
+        wsConnect(r.run_id); render(); await loadSessions();
+    } catch (e) { toast('Search failed: ' + e.message, 'error'); }
+    finally { document.getElementById('searchBtn').disabled = false; }
+}
+
+async function onSession(rid) {
+    S.runId = rid; S.steps = {}; S.expanded = {};
+    renderSidebar();
+    await loadData(rid);
+    const sess = S.sessions.find(s => s.run_id === rid);
+    if (sess?.status === 'running') wsConnect(rid);
+}
+
+function toggleCompany(name) {
+    S.expanded[name] = !S.expanded[name];
+    renderContent();
+}
+
+async function onApprove(evt, draftId) {
+    evt.stopPropagation();
+    try {
+        await json(`/sessions/${S.runId}/approve-draft/${draftId}`, { method: 'POST' });
+        toast('Draft approved', 'success'); await loadData(S.runId);
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+async function onDownloadExcel() {
+    try {
+        const r = await fetch(S.url + `/sessions/${S.runId}/excel`);
+        if (!r.ok) { toast('Excel not available yet', 'error'); return; }
+        const b = await r.blob(), a = document.createElement('a');
+        a.href = URL.createObjectURL(b); a.download = `report_${S.runId.slice(0,8)}.xlsx`;
+        a.click(); URL.revokeObjectURL(a.href); toast('Downloaded', 'success');
+    } catch (e) { toast('Download failed', 'error'); }
+}
+
+// =========================================================================
+// LOADERS
+// =========================================================================
+async function loadSessions() { try { S.sessions = (await json('/sessions')).sessions || []; renderSidebar(); } catch {} }
+async function loadData(rid) { try { S.data = await fetchAll(rid); render(); } catch { toast('Failed to load data', 'error'); } }
+
+// =========================================================================
+// INIT
+// =========================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    const saved = localStorage.getItem('jha_url');
+    const isBackend = location.protocol.startsWith('http') && !location.protocol.startsWith('file');
+    const url = saved || (isBackend ? location.origin : 'http://localhost:8000');
+    document.getElementById('backendUrl').value = url;
+    S.url = url; setDot('connecting');
+    try {
+        const d = await json('/health');
+        if (d.status === 'ok') {
+            S.connected = true; setDot('connected');
+            setModeBadge(d.dspy_enabled);
+            document.getElementById('overlay').classList.add('hidden');
+            await loadSessions();
+        } else throw 0;
+    } catch { setDot('disconnected'); document.getElementById('overlay').classList.remove('hidden'); }
+});
+</script>
 </body>
 </html>

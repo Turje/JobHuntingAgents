@@ -13,3 +13,8 @@ default_search_config:
   include_contact_search: true
   include_resume_tailoring: true
   include_outreach: true
+
+# DSPy defaults
+dspy:
+  enabled: false
+  optimized_path: ""

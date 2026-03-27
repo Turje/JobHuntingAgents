@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+from pylon.config import DSPY_ENABLED
 from pylon.models import PipelineContext, RouterContract
 
 
@@ -26,6 +27,11 @@ class BaseSearchAgent(ABC):
                 raise TypeError(
                     f"Concrete subclass {cls.__name__} must define class attribute 'name'"
                 )
+
+    @property
+    def _use_dspy(self) -> bool:
+        """Whether to use DSPy modules instead of direct ClaudeClient calls."""
+        return DSPY_ENABLED
 
     @abstractmethod
     def run(self, context: PipelineContext) -> RouterContract:
@@ -72,6 +78,11 @@ class BaseAnalysisAgent(ABC):
                 raise TypeError(
                     f"Concrete subclass {cls.__name__} must define class attribute 'name'"
                 )
+
+    @property
+    def _use_dspy(self) -> bool:
+        """Whether to use DSPy modules instead of direct ClaudeClient calls."""
+        return DSPY_ENABLED
 
     @abstractmethod
     def run(self, context: PipelineContext) -> RouterContract:

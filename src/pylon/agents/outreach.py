@@ -29,31 +29,72 @@ class OutreachAgent(BaseAnalysisAgent):
 
     def run(self, context: PipelineContext) -> RouterContract:
         """Draft outreach emails. Populates context.drafts."""
+        if not context.contacts:
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=0.0,
+                kb_update_notes="No contacts to draft emails for",
+            )
+
+        contacts_data = []
+        for ct in context.contacts:
+            entry = {
+                "company_name": ct.company_name,
+                "contact_name": ct.name,
+                "title": ct.title,
+            }
+            profile = next((p for p in context.profiles if p.company_name == ct.company_name), None)
+            if profile:
+                entry["ml_use_cases"] = profile.ml_use_cases
+                entry["culture"] = profile.culture
+            resume = next((r for r in context.resumes if r.company_name == ct.company_name), None)
+            if resume:
+                entry["tailored_summary"] = resume.tailored_summary
+            contacts_data.append(entry)
+
+        if self._use_dspy:
+            return self._run_dspy(context, contacts_data)
+        return self._run_claude(context, contacts_data)
+
+    def _run_dspy(
+        self, context: PipelineContext, contacts_data: list
+    ) -> RouterContract:
+        """Execute outreach drafting via DSPy module."""
         try:
-            if not context.contacts:
-                return RouterContract(
-                    status=ContractStatus.EXECUTED,
-                    confidence=0.0,
-                    kb_update_notes="No contacts to draft emails for",
-                )
+            from pylon.dspy_.modules import OutreachModule
 
+            module = OutreachModule()
+            prediction = module(
+                query=context.query,
+                contacts_json=json.dumps(contacts_data),
+            )
+
+            drafts = self._parse_drafts(prediction.drafts_json)
+            context.drafts = drafts
+
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=min(85.0, len(drafts) * 10.0),
+                critical_issues=0 if drafts else 1,
+                blocking=False,
+                kb_update_notes=f"Drafted {len(drafts)} outreach emails (DSPy)",
+            )
+        except Exception as exc:
+            self.logger.error("OutreachAgent._run_dspy failed: %s", exc)
+            return RouterContract(
+                status=ContractStatus.BLOCKED,
+                confidence=0.0,
+                critical_issues=1,
+                blocking=True,
+                kb_update_notes=f"Outreach drafting (DSPy) failed: {exc}",
+            )
+
+    def _run_claude(
+        self, context: PipelineContext, contacts_data: list
+    ) -> RouterContract:
+        """Execute outreach drafting via direct ClaudeClient call."""
+        try:
             system_prompt = self._load_brain()
-
-            contacts_data = []
-            for ct in context.contacts:
-                entry = {
-                    "company_name": ct.company_name,
-                    "contact_name": ct.name,
-                    "title": ct.title,
-                }
-                profile = next((p for p in context.profiles if p.company_name == ct.company_name), None)
-                if profile:
-                    entry["ml_use_cases"] = profile.ml_use_cases
-                    entry["culture"] = profile.culture
-                resume = next((r for r in context.resumes if r.company_name == ct.company_name), None)
-                if resume:
-                    entry["tailored_summary"] = resume.tailored_summary
-                contacts_data.append(entry)
 
             user_message = (
                 f"Draft cold outreach emails for: {context.query}\n\n"

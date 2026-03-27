@@ -54,9 +54,16 @@ MAX_OUTREACH_PER_DAY: int = int(
 HOST: str = os.getenv("HOST", _settings.get("host", "127.0.0.1"))
 PORT: int = int(os.getenv("PORT", _settings.get("port", 8000)))
 
+# Tavily (optional — for real web search)
+TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
+
 # Gmail (optional)
 GMAIL_CREDENTIALS_PATH: str = os.getenv("GMAIL_CREDENTIALS_PATH", "")
 GMAIL_TOKEN_PATH: str = os.getenv("GMAIL_TOKEN_PATH", "")
+
+# DSPy (optional — for auto-optimizable prompt modules)
+DSPY_ENABLED: bool = os.getenv("DSPY_ENABLED", "false").lower() in ("true", "1", "yes")
+DSPY_OPTIMIZED_PATH: str = os.getenv("DSPY_OPTIMIZED_PATH", "")
 
 
 def validate_required_keys() -> None:

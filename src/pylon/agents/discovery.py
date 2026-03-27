@@ -9,8 +9,9 @@ import json
 import logging
 
 from pylon.agents.base import BaseSearchAgent
-from pylon.config import MAX_COMPANIES_PER_SEARCH
+from pylon.config import MAX_COMPANIES_PER_SEARCH, TAVILY_API_KEY
 from pylon.core.claude_client import ClaudeClient
+from pylon.engine.search import WebSearchEngine
 from pylon.models import (
     CompanyCandidate,
     ContractStatus,
@@ -27,6 +28,7 @@ class DiscoveryAgent(BaseSearchAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="discovery")
+        self.search = WebSearchEngine(TAVILY_API_KEY)
         self.logger = logging.getLogger("agent.discovery")
 
     def run(self, context: PipelineContext) -> RouterContract:
@@ -34,16 +36,77 @@ class DiscoveryAgent(BaseSearchAgent):
         Discover companies from the user's query.
         Populates context.candidates and returns a RouterContract.
         """
+        domain_hint = ""
+        if context.intent and context.intent.domain != IndustryDomain.GENERAL:
+            domain_hint = f"\nFocus on the {context.intent.domain.value} industry."
+
+        web_context = ""
+        if self.search.is_available:
+            web_context = self.search.search_context(
+                f"{context.query} companies hiring careers", max_results=10
+            )
+
+        if self._use_dspy:
+            return self._run_dspy(context, domain_hint, web_context)
+        return self._run_claude(context, domain_hint, web_context)
+
+    def _run_dspy(
+        self, context: PipelineContext, domain_hint: str, web_context: str
+    ) -> RouterContract:
+        """Execute discovery via DSPy module."""
+        try:
+            from pylon.dspy_.modules import DiscoveryModule
+
+            module = DiscoveryModule()
+            prediction = module(
+                query=context.query,
+                domain_hint=domain_hint,
+                web_context=web_context,
+                max_companies=MAX_COMPANIES_PER_SEARCH,
+            )
+
+            candidates = self._parse_candidates(prediction.companies_json)
+            context.candidates = candidates
+
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=min(90.0, len(candidates) * 7.0),
+                critical_issues=0 if candidates else 1,
+                blocking=len(candidates) == 0,
+                kb_update_notes=f"Discovered {len(candidates)} companies (DSPy) for: {context.query[:50]}",
+            )
+        except Exception as exc:
+            self.logger.error("DiscoveryAgent._run_dspy failed: %s", exc)
+            return RouterContract(
+                status=ContractStatus.BLOCKED,
+                confidence=0.0,
+                critical_issues=1,
+                blocking=True,
+                kb_update_notes=f"Discovery (DSPy) failed: {exc}",
+            )
+
+    def _run_claude(
+        self, context: PipelineContext, domain_hint: str, web_context: str
+    ) -> RouterContract:
+        """Execute discovery via direct ClaudeClient call."""
         try:
             system_prompt = self._load_brain()
-            domain_hint = ""
-            if context.intent and context.intent.domain != IndustryDomain.GENERAL:
-                domain_hint = f"\nFocus on the {context.intent.domain.value} industry."
+
+            web_preamble = ""
+            if web_context:
+                web_preamble = (
+                    "Here is real web search data about this topic:\n"
+                    f"{web_context}\n\n"
+                    "Using this real data plus your knowledge, "
+                )
+            else:
+                web_preamble = "Using your knowledge, "
 
             user_message = (
                 f"User query: {context.query}\n"
                 f"{domain_hint}\n\n"
-                f"Find up to {MAX_COMPANIES_PER_SEARCH} companies that match this query.\n"
+                f"{web_preamble}"
+                f"find up to {MAX_COMPANIES_PER_SEARCH} companies that match this query.\n"
                 "Return a JSON array of objects with these fields:\n"
                 '- "name": company name\n'
                 '- "domain": industry domain (sports_tech, fintech, health_tech, edtech, gaming, ecommerce, climate_tech, media, general)\n'

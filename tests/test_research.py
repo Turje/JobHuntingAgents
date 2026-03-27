@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pylon.agents.research import ResearchAgent
+from pylon.engine.search import WebSearchEngine
 from pylon.models import (
     CompanyCandidate,
     ContractStatus,
@@ -85,3 +86,29 @@ class TestResearchAgent:
         agent.client.call.return_value = "not json"
         contract = agent.run(context)
         assert len(context.profiles) == 0
+
+    def test_run_with_web_search(self, agent, context):
+        mock_search = MagicMock(spec=WebSearchEngine)
+        mock_search.is_available = True
+        mock_search.search_context.return_value = (
+            "[StatsBomb Blog](https://statsbomb.com/blog)\nUsing xG models"
+        )
+        agent.search = mock_search
+
+        contract = agent.run(context)
+        assert contract.status == ContractStatus.EXECUTED
+        call_args = agent.client.call.call_args
+        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        assert "real web search data" in user_msg
+        assert "StatsBomb Blog" in user_msg
+
+    def test_run_without_web_search_fallback(self, agent, context):
+        mock_search = MagicMock(spec=WebSearchEngine)
+        mock_search.is_available = False
+        agent.search = mock_search
+
+        contract = agent.run(context)
+        assert contract.status == ContractStatus.EXECUTED
+        call_args = agent.client.call.call_args
+        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        assert "real web search data" not in user_msg

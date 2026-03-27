@@ -9,7 +9,9 @@ import json
 import logging
 
 from pylon.agents.base import BaseSearchAgent
+from pylon.config import TAVILY_API_KEY
 from pylon.core.claude_client import ClaudeClient
+from pylon.engine.search import WebSearchEngine
 from pylon.models import (
     CompanyProfile,
     ContractStatus,
@@ -26,26 +28,91 @@ class ResearchAgent(BaseSearchAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="research")
+        self.search = WebSearchEngine(TAVILY_API_KEY)
         self.logger = logging.getLogger("agent.research")
 
     def run(self, context: PipelineContext) -> RouterContract:
         """Research all candidates in context. Populates context.profiles."""
-        try:
-            if not context.candidates:
-                return RouterContract(
-                    status=ContractStatus.EXECUTED,
-                    confidence=0.0,
-                    kb_update_notes="No candidates to research",
-                )
+        if not context.candidates:
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=0.0,
+                kb_update_notes="No candidates to research",
+            )
 
+        companies_list = [
+            {"name": c.name, "domain": c.domain.value, "relevance": c.relevance_reason}
+            for c in context.candidates
+        ]
+
+        web_context = ""
+        if self.search.is_available:
+            snippets = []
+            for c in context.candidates:
+                snippet = self.search.search_context(
+                    f"{c.name} engineering blog tech stack culture", max_results=3
+                )
+                if snippet:
+                    snippets.append(f"### {c.name}\n{snippet}")
+            web_context = "\n\n".join(snippets)
+
+        if self._use_dspy:
+            return self._run_dspy(context, companies_list, web_context)
+        return self._run_claude(context, companies_list, web_context)
+
+    def _run_dspy(
+        self, context: PipelineContext, companies_list: list, web_context: str
+    ) -> RouterContract:
+        """Execute research via DSPy module."""
+        try:
+            from pylon.dspy_.modules import ResearchModule
+
+            module = ResearchModule()
+            prediction = module(
+                query=context.query,
+                companies_json=json.dumps(companies_list),
+                web_context=web_context,
+            )
+
+            profiles = self._parse_profiles(prediction.profiles_json)
+            context.profiles = profiles
+
+            return RouterContract(
+                status=ContractStatus.EXECUTED,
+                confidence=min(90.0, len(profiles) * 8.0),
+                critical_issues=0 if profiles else 1,
+                blocking=False,
+                kb_update_notes=f"Researched {len(profiles)} companies (DSPy)",
+            )
+        except Exception as exc:
+            self.logger.error("ResearchAgent._run_dspy failed: %s", exc)
+            return RouterContract(
+                status=ContractStatus.BLOCKED,
+                confidence=0.0,
+                critical_issues=1,
+                blocking=True,
+                kb_update_notes=f"Research (DSPy) failed: {exc}",
+            )
+
+    def _run_claude(
+        self, context: PipelineContext, companies_list: list, web_context: str
+    ) -> RouterContract:
+        """Execute research via direct ClaudeClient call."""
+        try:
             system_prompt = self._load_brain()
-            companies_list = [
-                {"name": c.name, "domain": c.domain.value, "relevance": c.relevance_reason}
-                for c in context.candidates
-            ]
+
+            web_preamble = ""
+            if web_context:
+                web_preamble = (
+                    "Here is real web search data about these companies:\n"
+                    f"{web_context}\n\n"
+                    "Using this real data plus your knowledge, research "
+                )
+            else:
+                web_preamble = "Research "
 
             user_message = (
-                f"Research these companies for a job seeker interested in: {context.query}\n\n"
+                f"{web_preamble}these companies for a job seeker interested in: {context.query}\n\n"
                 f"Companies:\n{json.dumps(companies_list, indent=2)}\n\n"
                 "For each company, return a JSON array with detailed profiles.\n"
                 "Return ONLY the JSON array."
