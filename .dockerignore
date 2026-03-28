@@ -1,0 +1,11 @@
+.git
+docs/
+tests/
+memory/
+*.pyc
+__pycache__
+.env
+.env.*
+data/
+.claude/
+.ruff_cache/
