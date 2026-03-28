@@ -6,8 +6,10 @@ Provides REST endpoints for search pipeline and WebSocket for live progress.
 from __future__ import annotations
 
 import asyncio
+import functools
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -28,6 +30,7 @@ _logger = logging.getLogger("pylon.main")
 
 _store = SessionStore()
 _ws_connections: dict[str, list[WebSocket]] = {}
+_thread_pool = ThreadPoolExecutor(max_workers=4)
 
 
 @asynccontextmanager
@@ -94,13 +97,17 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
     async def _run_pipeline():
         try:
             router = _get_router()
+            loop = asyncio.get_event_loop()
 
             def on_progress(step: str, data: Any) -> None:
-                asyncio.get_event_loop().call_soon_threadsafe(
+                loop.call_soon_threadsafe(
                     _schedule_broadcast, run_id, step, data
                 )
 
-            ctx, contract = router.handle_intent(query, on_progress=on_progress)
+            ctx, contract = await loop.run_in_executor(
+                _thread_pool,
+                functools.partial(router.handle_intent, query, on_progress=on_progress),
+            )
 
             if ctx.candidates:
                 await _store.save_companies(
