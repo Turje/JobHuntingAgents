@@ -9,7 +9,7 @@ import json
 import logging
 
 from pylon.agents.base import BaseAnalysisAgent
-from pylon.config import TAVILY_API_KEY
+from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
 from pylon.models import (
@@ -27,7 +27,7 @@ class SkillsAgent(BaseAnalysisAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="skills")
-        self.search = WebSearchEngine(TAVILY_API_KEY)
+        self.search = WebSearchEngine(GOOGLE_API_KEY, GOOGLE_CSE_ID)
         self.logger = logging.getLogger("agent.skills")
 
     def run(self, context: PipelineContext) -> RouterContract:
