@@ -25,6 +25,7 @@ from pylon.store import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _DASHBOARD_HTML = _PROJECT_ROOT / "docs" / "index.html"
+_HOW_IT_WORKS_HTML = _PROJECT_ROOT / "docs" / "how-it-works.html"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s | %(levelname)s | %(message)s")
 _logger = logging.getLogger("pylon.main")
@@ -94,7 +95,8 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
     if not query:
         return JSONResponse({"error": "query is required"}, status_code=400)
 
-    run_id = await _store.create_session(query)
+    search_mode = payload.get("search_mode", "general")
+    run_id = await _store.create_session(query, search_mode=search_mode)
 
     async def _run_pipeline():
         try:
@@ -108,7 +110,7 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
 
             ctx, contract = await loop.run_in_executor(
                 _thread_pool,
-                functools.partial(router.handle_intent, query, on_progress=on_progress),
+                functools.partial(router.handle_intent, query, search_mode=search_mode, on_progress=on_progress),
             )
 
             if ctx.candidates:
@@ -459,6 +461,12 @@ def _schedule_broadcast(run_id: str, event: str, data: Any) -> None:
 async def dashboard():
     """Serve the operational dashboard."""
     return FileResponse(_DASHBOARD_HTML, media_type="text/html")
+
+
+@app.get("/how-it-works", include_in_schema=False)
+async def how_it_works():
+    """Serve the How It Works page."""
+    return FileResponse(_HOW_IT_WORKS_HTML, media_type="text/html")
 
 
 # ---------------------------------------------------------------------------

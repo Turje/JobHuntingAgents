@@ -13,7 +13,58 @@ from pathlib import Path
 from typing import Any
 
 from pylon.config import DSPY_ENABLED
-from pylon.models import PipelineContext, RouterContract
+from pylon.models import PipelineContext, RouterContract, SearchMode
+
+
+# Mode-specific prompt hints per agent type
+_DS_ML_HINTS: dict[str, str] = {
+    "discovery": (
+        "\n\n[SEARCH MODE: DS/ML] Focus on companies with data science, machine learning, "
+        "or AI roles. These can be ANY industry — airlines, logistics, healthcare, finance, "
+        "retail, manufacturing, sports, etc. — not just tech companies. Look for companies "
+        "that have data teams, ML engineering groups, or AI initiatives."
+    ),
+    "research": (
+        "\n\n[SEARCH MODE: DS/ML] Research each company's data science and ML capabilities. "
+        "Focus on: ML/AI teams, data infrastructure, model deployment practices, data science "
+        "use cases, and how they leverage data for business decisions. Search for "
+        '"[company] data science ML team careers" and similar queries.'
+    ),
+    "skills": (
+        "\n\n[SEARCH MODE: DS/ML] Emphasize ML frameworks and data tools: PyTorch, TensorFlow, "
+        "scikit-learn, Spark, pandas, Airflow, MLflow, Kubeflow, Databricks, dbt, SQL, "
+        "feature stores, vector databases, LLM tooling, and cloud ML services (SageMaker, "
+        "Vertex AI, Azure ML)."
+    ),
+    "tools": (
+        "\n\n[SEARCH MODE: DS/ML] Suggest ML-specific buildable projects: feature stores, "
+        "ML pipelines, model monitoring dashboards, A/B testing frameworks, recommendation "
+        "engines, NLP tools, data quality monitors, ML model registries, automated EDA tools, "
+        "or domain-specific ML applications relevant to the company's industry."
+    ),
+    "contact": (
+        "\n\n[SEARCH MODE: DS/ML] Look for data science and ML leadership: Head of Data Science, "
+        "ML Engineering Manager, Chief Data Officer, VP of Analytics, Director of AI, "
+        "Principal Data Scientist, Head of ML Platform."
+    ),
+    "resume": (
+        "\n\n[SEARCH MODE: DS/ML] Emphasize ML/DS skills and projects: model development, "
+        "data pipelines, experimentation, production ML systems, statistical analysis, "
+        "deep learning, NLP, computer vision, and relevant ML frameworks."
+    ),
+    "outreach": (
+        "\n\n[SEARCH MODE: DS/ML] Pitch data science and ML expertise. Reference specific "
+        "ML use cases the company works on, mention relevant frameworks and tools, and "
+        "highlight experience with production ML systems or data-driven decision making."
+    ),
+}
+
+
+def get_mode_hint(agent_name: str, context: PipelineContext) -> str:
+    """Return mode-specific prompt hint for the agent, or empty string for general mode."""
+    if context.search_mode == SearchMode.DS_ML:
+        return _DS_ML_HINTS.get(agent_name, "")
+    return ""
 
 
 def _safe_parse_json(text: str, agent_name: str) -> list[dict[str, Any]]:

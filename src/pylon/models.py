@@ -42,6 +42,12 @@ class IndustryDomain(str, Enum):
     GENERAL = "general"
 
 
+class SearchMode(str, Enum):
+    """User-selectable search mode."""
+    GENERAL = "general"
+    DS_ML = "ds_ml"
+
+
 class ContractStatus(str, Enum):
     """Status codes for RouterContract accountability."""
     PLANNED = "PLANNED"
@@ -180,6 +186,7 @@ class PipelineContext(BaseModel):
     """Carries all intermediate data for a single search pipeline run."""
     run_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     query: str = ""
+    search_mode: SearchMode = SearchMode.GENERAL
     intent: Optional[Intent] = None
     candidates: list[CompanyCandidate] = Field(default_factory=list)
     profiles: list[CompanyProfile] = Field(default_factory=list)
@@ -192,8 +199,8 @@ class PipelineContext(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @classmethod
-    def new(cls, query: str) -> PipelineContext:
-        return cls(query=query)
+    def new(cls, query: str, search_mode: SearchMode = SearchMode.GENERAL) -> PipelineContext:
+        return cls(query=query, search_mode=search_mode)
 
 
 # ---------------------------------------------------------------------------

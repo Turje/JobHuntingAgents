@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseAnalysisAgent
+from pylon.agents.base import BaseAnalysisAgent, get_mode_hint
 from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
@@ -115,9 +115,11 @@ class ToolSuggestionsAgent(BaseAnalysisAgent):
             else:
                 web_preamble = "Suggest "
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"{web_preamble}buildable tools for a job seeker interested in: {context.query}\n\n"
                 f"Company data:\n{json.dumps(companies_data, indent=2)}\n\n"
+                f"{mode_hint}\n"
                 "For each company, suggest up to 5 tools/products/demos they could build "
                 "to impress hiring managers. Return a JSON array.\n"
                 "Return ONLY the JSON array."

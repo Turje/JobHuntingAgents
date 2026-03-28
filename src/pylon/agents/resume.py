@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseAnalysisAgent
+from pylon.agents.base import BaseAnalysisAgent, get_mode_hint
 from pylon.core.claude_client import ClaudeClient
 from pylon.models import (
     ContractStatus,
@@ -93,9 +93,11 @@ class ResumeAgent(BaseAnalysisAgent):
         try:
             system_prompt = self._load_brain()
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"Tailor resume content for a job seeker interested in: {context.query}\n\n"
                 f"Target companies:\n{json.dumps(companies_data, indent=2)}\n\n"
+                f"{mode_hint}\n"
                 "For each company, return a JSON array with tailored resume content.\n"
                 "Fields: company_name, tailored_summary, emphasis_areas (list), "
                 "highlighted_projects (list), tailored_bullets (list)\n"

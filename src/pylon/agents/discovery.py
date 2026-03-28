@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseSearchAgent
+from pylon.agents.base import BaseSearchAgent, get_mode_hint
 from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, MAX_COMPANIES_PER_SEARCH, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
@@ -102,9 +102,10 @@ class DiscoveryAgent(BaseSearchAgent):
             else:
                 web_preamble = "Using your knowledge, "
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"User query: {context.query}\n"
-                f"{domain_hint}\n\n"
+                f"{domain_hint}{mode_hint}\n\n"
                 f"{web_preamble}"
                 f"find up to {MAX_COMPANIES_PER_SEARCH} companies that match this query.\n"
                 "Return a JSON array of objects with these fields:\n"

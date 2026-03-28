@@ -33,16 +33,21 @@ class SessionStore:
                 await db.execute("ALTER TABLE sessions ADD COLUMN excel_path TEXT DEFAULT ''")
             except Exception:
                 pass  # column already exists
+            # Migrate: add search_mode to sessions if missing
+            try:
+                await db.execute("ALTER TABLE sessions ADD COLUMN search_mode TEXT DEFAULT 'general'")
+            except Exception:
+                pass  # column already exists
             await db.commit()
 
-    async def create_session(self, query: str, run_id: str | None = None) -> str:
+    async def create_session(self, query: str, run_id: str | None = None, search_mode: str = "general") -> str:
         """Create a new pipeline session. Returns the session run_id."""
         rid = run_id or str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
-                "INSERT INTO sessions (run_id, query, created_at, status) VALUES (?, ?, ?, ?)",
-                (rid, query, now, "running"),
+                "INSERT INTO sessions (run_id, query, created_at, status, search_mode) VALUES (?, ?, ?, ?, ?)",
+                (rid, query, now, "running", search_mode),
             )
             await db.commit()
         return rid

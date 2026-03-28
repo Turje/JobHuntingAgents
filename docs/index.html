@@ -120,6 +120,27 @@
         }
         .search-box button:hover { opacity: 0.9; }
         .search-box button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .search-controls {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            margin-bottom: 10px;
+        }
+        .search-controls .search-label { margin-bottom: 0; }
+        .mode-select {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            padding: 5px 12px; font-size: 0.8rem; outline: none;
+            cursor: pointer;
+        }
+        .mode-select:focus { border-color: var(--accent); }
+        .mode-badge-sm {
+            font-size: 0.55rem; padding: 1px 6px; border-radius: 8px;
+            font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase;
+            margin-left: 4px;
+        }
+        .mode-badge-sm.ds_ml { background: var(--purple-glow); color: var(--purple); }
+        .mode-badge-sm.general { background: var(--teal-glow); color: var(--teal); }
+        .hiw-link { font-size: 0.75rem; color: var(--text-dim); margin-left: 8px; }
+        .hiw-link:hover { color: var(--accent); }
 
         /* ---- LAYOUT ---- */
         .main { display: flex; height: calc(100vh - 140px); }
@@ -421,7 +442,14 @@
 
     <div class="search-wrap">
         <div class="search-inner">
-            <div class="search-label">Find Your Dream Job</div>
+            <div class="search-controls">
+                <div class="search-label">Find Your Dream Job</div>
+                <select id="searchMode" class="mode-select" onchange="S.searchMode=this.value">
+                    <option value="general">General</option>
+                    <option value="ds_ml">DS / ML</option>
+                </select>
+                <a href="/how-it-works" class="hiw-link">How It Works</a>
+            </div>
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Find your dream job..." onkeydown="if(event.key==='Enter')onSearch()" />
                 <button id="searchBtn" onclick="onSearch()">Cast</button>
@@ -480,6 +508,7 @@ const S = {
     activeTab: {},      // companyName -> tab key
     data: { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] },
     uploadedResume: null,
+    searchMode: 'general',
     searchStartTime: null,  // timestamp when current search started
     timerInterval: null,    // interval ID for live timer
 };
@@ -627,8 +656,11 @@ function renderSidebar() {
         const t = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
         const elapsed = getSessionElapsed(s);
         const timerHtml = elapsed ? `<span class="session-timer">${elapsed}</span>` : '';
+        const sm = s.search_mode || 'general';
+        const modeLabel = sm === 'ds_ml' ? 'DS/ML' : 'General';
+        const modeBadge = `<span class="mode-badge-sm ${sm}">${modeLabel}</span>`;
         return `<div class="session-item${a}" onclick="onSession('${s.run_id}')">
-            <div class="session-query">${esc(s.query)}</div>
+            <div class="session-query">${esc(s.query)}${modeBadge}</div>
             <div class="session-meta"><span>${t}</span>${timerHtml}<span class="badge badge-${s.status}">${s.status}</span><button class="session-del" onclick="onDeleteSession(event,'${s.run_id}')" title="Delete">&#x2715;</button></div>
         </div>`;
     }).join('');
@@ -904,7 +936,7 @@ async function onSearch() {
     if (!q || !S.connected) return;
     document.getElementById('searchBtn').disabled = true;
     try {
-        const r = await json('/search', { method: 'POST', body: JSON.stringify({ query: q }) });
+        const r = await json('/search', { method: 'POST', body: JSON.stringify({ query: q, search_mode: S.searchMode }) });
         S.runId = r.run_id; S.steps = {}; S.expanded = {}; S.activeTab = {};
         S.data = { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] };
         S.searchStartTime = Date.now();

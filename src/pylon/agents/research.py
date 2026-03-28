@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseSearchAgent
+from pylon.agents.base import BaseSearchAgent, get_mode_hint
 from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
@@ -111,9 +111,11 @@ class ResearchAgent(BaseSearchAgent):
             else:
                 web_preamble = "Research "
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"{web_preamble}these companies for a job seeker interested in: {context.query}\n\n"
                 f"Companies:\n{json.dumps(companies_list, indent=2)}\n\n"
+                f"{mode_hint}\n"
                 "For each company, return a JSON array with detailed profiles.\n"
                 "Return ONLY the JSON array."
             )

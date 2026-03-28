@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseAnalysisAgent
+from pylon.agents.base import BaseAnalysisAgent, get_mode_hint
 from pylon.core.claude_client import ClaudeClient
 from pylon.models import (
     ContractStatus,
@@ -96,9 +96,11 @@ class OutreachAgent(BaseAnalysisAgent):
         try:
             system_prompt = self._load_brain()
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"Draft cold outreach emails for: {context.query}\n\n"
                 f"Contacts with company context:\n{json.dumps(contacts_data, indent=2)}\n\n"
+                f"{mode_hint}\n"
                 "For each contact, return a JSON array with email drafts.\n"
                 "Fields: company_name, contact_name, subject, body, "
                 "personalization_notes, template_used\n"

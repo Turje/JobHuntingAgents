@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from pylon.agents.base import BaseAnalysisAgent
+from pylon.agents.base import BaseAnalysisAgent, get_mode_hint
 from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
@@ -107,9 +107,11 @@ class SkillsAgent(BaseAnalysisAgent):
             else:
                 web_preamble = "Analyze "
 
+            mode_hint = get_mode_hint(self.name, context)
             user_message = (
                 f"{web_preamble}tech stacks for a job seeker interested in: {context.query}\n\n"
                 f"Company profiles:\n{json.dumps(profiles_data, indent=2)}\n\n"
+                f"{mode_hint}\n"
                 "For each company, return a JSON array with skills analysis.\n"
                 "Return ONLY the JSON array."
             )

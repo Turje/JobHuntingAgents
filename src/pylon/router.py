@@ -17,6 +17,7 @@ from pylon.models import (
     IntentPriority,
     PipelineContext,
     RouterContract,
+    SearchMode,
 )
 from pylon.pipeline import FullSearchPipeline
 from pylon.workflows.ac_agents import SearchCritic, SearchPlanner
@@ -39,6 +40,7 @@ class CastNetRouter:
     def handle_intent(
         self,
         user_input: str,
+        search_mode: str = "general",
         on_progress: Optional[Callable[[str, Any], None]] = None,
     ) -> tuple[PipelineContext, RouterContract]:
         """
@@ -55,7 +57,12 @@ class CastNetRouter:
             intent.swarm_worthy,
         )
 
-        context = PipelineContext.new(user_input)
+        try:
+            mode = SearchMode(search_mode)
+        except ValueError:
+            mode = SearchMode.GENERAL
+
+        context = PipelineContext.new(user_input, search_mode=mode)
         context.intent = intent
 
         if intent.priority == IntentPriority.EMERGENCY:
