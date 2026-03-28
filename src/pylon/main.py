@@ -20,7 +20,7 @@ from fastapi import FastAPI, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from pylon.config import DSPY_ENABLED, HOST, LLM_PROVIDER, PORT
+from pylon.config import CORS_ORIGINS, DSPY_ENABLED, HOST, LLM_PROVIDER, PORT
 from pylon.store import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -54,7 +54,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o.strip() for o in CORS_ORIGINS.split(",")],
     allow_methods=["*"],
     allow_headers=["*"],
 )

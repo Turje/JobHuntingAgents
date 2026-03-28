@@ -76,6 +76,15 @@ GMAIL_TOKEN_PATH: str = os.getenv("GMAIL_TOKEN_PATH", "")
 DSPY_ENABLED: bool = os.getenv("DSPY_ENABLED", "false").lower() in ("true", "1", "yes")
 DSPY_OPTIMIZED_PATH: str = os.getenv("DSPY_OPTIMIZED_PATH", "")
 
+# CORS
+CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "*")
+
+# Database
+DATABASE_PATH: str = os.getenv("DATABASE_PATH", "")
+
+# Excel output
+EXCEL_OUTPUT_DIR: str = os.getenv("EXCEL_OUTPUT_DIR", "")
+
 
 def validate_required_keys() -> None:
     """Call once at startup to verify required env vars."""

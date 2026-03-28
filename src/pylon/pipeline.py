@@ -16,7 +16,7 @@ from pylon.agents.research import ResearchAgent
 from pylon.agents.resume import ResumeAgent
 from pylon.agents.skills import SkillsAgent
 from pylon.agents.tools import ToolSuggestionsAgent
-from pylon.config import DSPY_ENABLED, LLM_PROVIDER
+from pylon.config import DSPY_ENABLED, EXCEL_OUTPUT_DIR, LLM_PROVIDER
 from pylon.excel import ExcelManager
 from pylon.models import ContractStatus, PipelineContext, RouterContract
 
@@ -49,7 +49,7 @@ class FullSearchPipeline:
         self._contact = ContactAgent()
         self._resume = ResumeAgent()
         self._outreach = OutreachAgent()
-        self._excel = ExcelManager()
+        self._excel = ExcelManager(output_dir=EXCEL_OUTPUT_DIR or None)
 
     def run(
         self,

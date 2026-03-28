@@ -13,7 +13,12 @@ from typing import Any, Optional
 
 import aiosqlite
 
-_DEFAULT_DB = Path(__file__).resolve().parent.parent.parent / "data" / "pylon.db"
+import os
+
+_DEFAULT_DB = Path(
+    os.getenv("DATABASE_PATH")
+    or str(Path(__file__).resolve().parent.parent.parent / "data" / "pylon.db")
+)
 
 
 class SessionStore:
