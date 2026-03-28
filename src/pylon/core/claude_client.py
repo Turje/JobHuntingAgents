@@ -60,7 +60,7 @@ class ClaudeClient:
         system_prompt: str,
         user_message: str,
         model: str | None = None,
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
         temperature: float = 0.3,
     ) -> str:
         """
@@ -104,7 +104,7 @@ class ClaudeClient:
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                with urlopen(req, timeout=60) as resp:
+                with urlopen(req, timeout=120) as resp:
                     data = json.loads(resp.read())
 
                 latency_ms = int((time.monotonic() - start_time) * 1000)

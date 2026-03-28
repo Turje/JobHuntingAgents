@@ -87,28 +87,12 @@ class TestSkillsAgent:
         contract = agent.run(context)
         assert len(context.skills) == 0
 
-    def test_run_with_web_search(self, agent, context):
-        mock_search = MagicMock(spec=WebSearchEngine)
-        mock_search.is_available = True
-        mock_search.search_context.return_value = (
-            "[StatsBomb Jobs](https://statsbomb.com/jobs)\nLooking for PyTorch expertise"
-        )
-        agent.search = mock_search
-
+    def test_no_web_search_used(self, agent, context):
+        """Skills agent reuses Research data — no additional web searches."""
         contract = agent.run(context)
         assert contract.status == ContractStatus.EXECUTED
         call_args = agent.client.call.call_args
         user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
-        assert "real job posting" in user_msg
-        assert "StatsBomb Jobs" in user_msg
-
-    def test_run_without_web_search_fallback(self, agent, context):
-        mock_search = MagicMock(spec=WebSearchEngine)
-        mock_search.is_available = False
-        agent.search = mock_search
-
-        contract = agent.run(context)
-        assert contract.status == ContractStatus.EXECUTED
-        call_args = agent.client.call.call_args
-        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        # Should use the simple "Analyze" preamble, not the web-data preamble
+        assert user_msg.startswith("Analyze ")
         assert "real job posting" not in user_msg

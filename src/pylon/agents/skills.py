@@ -48,17 +48,9 @@ class SkillsAgent(BaseAnalysisAgent):
             for p in context.profiles
         ]
 
+        # Skills agent relies on profile data already gathered by Research —
+        # no additional web searches needed (saves API calls for free tier)
         web_context = ""
-        if self.search.is_available:
-            snippets = []
-            for p in context.profiles:
-                snippet = self.search.search_context(
-                    f"{p.company_name} data scientist machine learning job requirements",
-                    max_results=3,
-                )
-                if snippet:
-                    snippets.append(f"### {p.company_name}\n{snippet}")
-            web_context = "\n\n".join(snippets)
 
         if self._use_dspy:
             return self._run_dspy(context, profiles_data, web_context)

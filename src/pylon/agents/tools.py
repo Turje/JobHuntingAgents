@@ -56,17 +56,9 @@ class ToolSuggestionsAgent(BaseAnalysisAgent):
                 entry["cloud_platform"] = sk.cloud_platform
             companies_data.append(entry)
 
+        # Tools agent relies on profile + skills data already gathered —
+        # no additional web searches needed (saves API calls for free tier)
         web_context = ""
-        if self.search.is_available:
-            snippets = []
-            for p in context.profiles:
-                snippet = self.search.search_context(
-                    f"{p.company_name} engineering challenges tools products",
-                    max_results=3,
-                )
-                if snippet:
-                    snippets.append(f"### {p.company_name}\n{snippet}")
-            web_context = "\n\n".join(snippets)
 
         if self._use_dspy:
             return self._run_dspy(context, companies_data, web_context)

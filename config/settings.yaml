@@ -1,7 +1,7 @@
 # Pylon application settings
 
 claude_model: "claude-sonnet-4-6"
-max_companies_per_search: 15
+max_companies_per_search: 10
 max_outreach_per_day: 10
 
 host: "127.0.0.1"

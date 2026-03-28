@@ -47,18 +47,9 @@ class ContactAgent(BaseAnalysisAgent):
             for c in companies
         ]
 
+        # Contact agent relies on profile data already gathered by Research —
+        # no additional web searches needed (saves API calls for free tier)
         web_context = ""
-        if self.search.is_available:
-            snippets = []
-            for c in companies:
-                name = getattr(c, "company_name", "Unknown")
-                snippet = self.search.search_context(
-                    f"{name} CTO VP Engineering Head of Data Science",
-                    max_results=3,
-                )
-                if snippet:
-                    snippets.append(f"### {name}\n{snippet}")
-            web_context = "\n\n".join(snippets)
 
         if self._use_dspy:
             return self._run_dspy(context, companies_data, web_context)

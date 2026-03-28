@@ -39,7 +39,7 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", _settings.get("llm_provider", "gem
 
 # Google Gemini
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", _settings.get("gemini_model", "gemini-2.0-flash"))
+GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", _settings.get("gemini_model", "gemini-2.5-flash"))
 
 # Anthropic (fallback / optional)
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
@@ -51,7 +51,7 @@ RETRY_BASE_DELAY: float = float(os.getenv("RETRY_BASE_DELAY", _limits.get("retry
 
 # Pipeline
 MAX_COMPANIES_PER_SEARCH: int = int(
-    os.getenv("MAX_COMPANIES_PER_SEARCH", _settings.get("max_companies_per_search", 30))
+    os.getenv("MAX_COMPANIES_PER_SEARCH", _settings.get("max_companies_per_search", 10))
 )
 MAX_OUTREACH_PER_DAY: int = int(
     os.getenv("MAX_OUTREACH_PER_DAY", _settings.get("max_outreach_per_day", 10))

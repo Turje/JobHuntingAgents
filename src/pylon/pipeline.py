@@ -6,13 +6,24 @@ Discover → Research → Skills → Tools → Contact → Resume → Outreach �
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, Callable, Optional
 
+from pylon.agents.contact import ContactAgent
 from pylon.agents.discovery import DiscoveryAgent
-from pylon.config import DSPY_ENABLED
+from pylon.agents.outreach import OutreachAgent
+from pylon.agents.research import ResearchAgent
+from pylon.agents.resume import ResumeAgent
+from pylon.agents.skills import SkillsAgent
+from pylon.agents.tools import ToolSuggestionsAgent
+from pylon.config import DSPY_ENABLED, LLM_PROVIDER
+from pylon.excel import ExcelManager
 from pylon.models import ContractStatus, PipelineContext, RouterContract
 
 _logger = logging.getLogger("pipeline")
+
+# Gemini free tier: ~15 RPM — pause between LLM-calling steps
+_GEMINI_STEP_DELAY = 5  # seconds
 
 
 class FullSearchPipeline:
@@ -32,14 +43,13 @@ class FullSearchPipeline:
                 _logger.warning("DSPy configuration failed, falling back to Claude: %s", exc)
 
         self.discovery = DiscoveryAgent()
-        # Layer 2+ agents are lazily imported when needed
-        self._research = None
-        self._skills = None
-        self._tools = None
-        self._contact = None
-        self._resume = None
-        self._outreach = None
-        self._excel = None
+        self._research = ResearchAgent()
+        self._skills = SkillsAgent()
+        self._tools = ToolSuggestionsAgent()
+        self._contact = ContactAgent()
+        self._resume = ResumeAgent()
+        self._outreach = OutreachAgent()
+        self._excel = ExcelManager()
 
     def run(
         self,
@@ -58,10 +68,17 @@ class FullSearchPipeline:
         """
         steps_completed = 0
         total_issues = 0
+        use_delay = LLM_PROVIDER == "gemini"
 
         def _notify(step: str, data: Any = None) -> None:
             if on_progress:
                 on_progress(step, data)
+
+        def _rate_limit_pause() -> None:
+            """Pause between LLM steps to respect Gemini free-tier RPM limits."""
+            if use_delay:
+                _logger.info("Rate-limit pause (%ds) for Gemini free tier", _GEMINI_STEP_DELAY)
+                time.sleep(_GEMINI_STEP_DELAY)
 
         # Step 1: Discovery
         _notify("discovery_start", {"query": context.query})
@@ -76,66 +93,65 @@ class FullSearchPipeline:
             return contract
 
         # Step 2: Research (Layer 2)
-        if self._research:
-            _notify("research_start", {"count": len(context.candidates)})
-            _logger.info("Pipeline step 2: Research")
-            rc = self._research.run(context)
-            _notify("research_complete", {"count": len(context.profiles)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("research_start", {"count": len(context.candidates)})
+        _logger.info("Pipeline step 2: Research")
+        rc = self._research.run(context)
+        _notify("research_complete", {"count": len(context.profiles)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
         # Step 3: Skills (Layer 2)
-        if self._skills:
-            _notify("skills_start", {"count": len(context.profiles)})
-            _logger.info("Pipeline step 3: Skills Analysis")
-            rc = self._skills.run(context)
-            _notify("skills_complete", {"count": len(context.skills)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("skills_start", {"count": len(context.profiles)})
+        _logger.info("Pipeline step 3: Skills Analysis")
+        rc = self._skills.run(context)
+        _notify("skills_complete", {"count": len(context.skills)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
         # Step 4: Tool Suggestions (Layer 2)
-        if self._tools:
-            _notify("tools_start", {"count": len(context.profiles)})
-            _logger.info("Pipeline step 4: Tool Suggestions")
-            rc = self._tools.run(context)
-            _notify("tools_complete", {"count": len(context.tools)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("tools_start", {"count": len(context.profiles)})
+        _logger.info("Pipeline step 4: Tool Suggestions")
+        rc = self._tools.run(context)
+        _notify("tools_complete", {"count": len(context.tools)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
         # Step 5: Contact (Layer 3)
-        if self._contact:
-            _notify("contact_start", {"count": len(context.candidates)})
-            _logger.info("Pipeline step 5: Contact Search")
-            rc = self._contact.run(context)
-            _notify("contact_complete", {"count": len(context.contacts)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("contact_start", {"count": len(context.candidates)})
+        _logger.info("Pipeline step 5: Contact Search")
+        rc = self._contact.run(context)
+        _notify("contact_complete", {"count": len(context.contacts)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
         # Step 6: Resume (Layer 4)
-        if self._resume:
-            _notify("resume_start", {"count": len(context.candidates)})
-            _logger.info("Pipeline step 6: Resume Tailoring")
-            rc = self._resume.run(context)
-            _notify("resume_complete", {"count": len(context.resumes)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("resume_start", {"count": len(context.candidates)})
+        _logger.info("Pipeline step 6: Resume Tailoring")
+        rc = self._resume.run(context)
+        _notify("resume_complete", {"count": len(context.resumes)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
         # Step 7: Outreach (Layer 4)
-        if self._outreach:
-            _notify("outreach_start", {"count": len(context.contacts)})
-            _logger.info("Pipeline step 7: Outreach Drafts")
-            rc = self._outreach.run(context)
-            _notify("outreach_complete", {"count": len(context.drafts)})
-            steps_completed += 1
-            total_issues += rc.critical_issues
+        _rate_limit_pause()
+        _notify("outreach_start", {"count": len(context.contacts)})
+        _logger.info("Pipeline step 7: Outreach Drafts")
+        rc = self._outreach.run(context)
+        _notify("outreach_complete", {"count": len(context.drafts)})
+        steps_completed += 1
+        total_issues += rc.critical_issues
 
-        # Step 8: Excel Export (Layer 3)
-        if self._excel:
-            _notify("excel_start", {})
-            _logger.info("Pipeline step 8: Excel Export")
-            context.excel_path = self._excel.export(context)
-            _notify("excel_complete", {"path": context.excel_path})
-            steps_completed += 1
+        # Step 8: Excel Export (no LLM call, no delay needed)
+        _notify("excel_start", {})
+        _logger.info("Pipeline step 8: Excel Export")
+        context.excel_path = self._excel.export(context)
+        _notify("excel_complete", {"path": context.excel_path})
+        steps_completed += 1
 
         _notify("pipeline_complete", {"steps": steps_completed, "issues": total_issues})
 

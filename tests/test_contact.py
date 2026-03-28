@@ -78,28 +78,12 @@ class TestContactAgent:
         contract = agent.run(context)
         assert contract.status == ContractStatus.EXECUTED
 
-    def test_run_with_web_search(self, agent, context):
-        mock_search = MagicMock(spec=WebSearchEngine)
-        mock_search.is_available = True
-        mock_search.search_context.return_value = (
-            "[LinkedIn](https://linkedin.com)\nTed Knutson, CEO at StatsBomb"
-        )
-        agent.search = mock_search
-
+    def test_no_web_search_used(self, agent, context):
+        """Contact agent reuses Research data — no additional web searches."""
         contract = agent.run(context)
         assert contract.status == ContractStatus.EXECUTED
         call_args = agent.client.call.call_args
         user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
-        assert "real web data" in user_msg
-        assert "Ted Knutson" in user_msg
-
-    def test_run_without_web_search_fallback(self, agent, context):
-        mock_search = MagicMock(spec=WebSearchEngine)
-        mock_search.is_available = False
-        agent.search = mock_search
-
-        contract = agent.run(context)
-        assert contract.status == ContractStatus.EXECUTED
-        call_args = agent.client.call.call_args
-        user_msg = call_args.kwargs.get("user_message", call_args[1].get("user_message", ""))
+        # Should use the simple "Find" preamble, not the web-data preamble
+        assert user_msg.startswith("Find ")
         assert "real web data" not in user_msg
