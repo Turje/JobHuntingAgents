@@ -107,8 +107,8 @@ class ContactAgent(BaseAnalysisAgent):
                 web_preamble = "Find "
 
             user_message = (
-                f"{web_preamble}decision-makers for DS/ML hiring at these companies.\n"
-                f"Context: {context.query}\n\n"
+                f"{web_preamble}decision-makers for hiring at these companies.\n"
+                f"The user is looking for: {context.query}\n\n"
                 f"Companies:\n{json.dumps(companies_data, indent=2)}\n\n"
                 "Return a JSON array with one contact per company.\n"
                 "Return ONLY the JSON array."

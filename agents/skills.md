@@ -13,7 +13,7 @@ Analyze a company's tech stack and compare it against the user's skills to ident
 Return a JSON array of objects with these fields:
 - "company_name": exact company name
 - "tools_used": list of tools/technologies the company uses
-- "ml_frameworks": list of ML/DL frameworks (PyTorch, TensorFlow, JAX, etc.)
+- "ml_frameworks": list of specialized frameworks or industry tools relevant to the role
 - "cloud_platform": primary cloud provider (AWS, GCP, Azure)
 - "skills_to_learn": list of skills the user should develop
 - "alignment_score": 0.0 to 1.0 how well the user's skills match

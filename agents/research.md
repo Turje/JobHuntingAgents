@@ -16,7 +16,7 @@ Return a JSON array of objects with these fields:
 - "engineering_blog": URL to engineering blog if known
 - "notable_clients": list of known clients/partners
 - "culture": engineering culture description
-- "ml_use_cases": list of specific ML/DS applications
+- "ml_use_cases": list of specific technology applications or key business areas
 - "funding_stage": one of (seed, series_a, series_b, series_c_plus, public, bootstrapped, unknown)
 - "hiring_signals": list of indicators they're hiring (recent job posts, team growth, new office)
 - "headquarters": city/country
@@ -27,4 +27,4 @@ Return a JSON array of objects with these fields:
 - Base findings on publicly available information
 - If uncertain about a field, use empty string or empty list
 - Never fabricate URLs or specific numbers
-- Focus on information relevant to a DS/ML job seeker
+- Focus on information relevant to the user's job search query and career interests

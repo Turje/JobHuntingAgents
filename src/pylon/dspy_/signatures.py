@@ -88,8 +88,8 @@ class SuggestTools(dspy.Signature):
 
 
 class FindContacts(dspy.Signature):
-    """Find decision-makers (CTO, VP Engineering, Head of DS/ML) at the given
-    companies for a job seeker. Return a JSON array of contacts with
+    """Find decision-makers and hiring managers at the given companies
+    relevant to the job seeker's query. Return a JSON array of contacts with
     company_name, name, title, email, linkedin_url, notes, confidence."""
 
     query: str = dspy.InputField(desc="The job seeker's search context")

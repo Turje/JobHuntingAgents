@@ -50,7 +50,7 @@ class ResearchAgent(BaseSearchAgent):
             snippets = []
             for c in context.candidates:
                 snippet = self.search.search_context(
-                    f"{c.name} engineering blog tech stack culture", max_results=3
+                    f"{c.name} careers culture hiring about", max_results=3
                 )
                 if snippet:
                     snippets.append(f"### {c.name}\n{snippet}")

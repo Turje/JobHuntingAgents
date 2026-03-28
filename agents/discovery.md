@@ -10,8 +10,9 @@ You receive two pieces of information:
 
 1. **query** -- Free-text description of what the user is looking for. Examples:
    - "AI startups in sports analytics"
-   - "Series A fintech companies in NYC with ML teams"
-   - "Climate tech companies using computer vision"
+   - "Travel companies where I can meet famous people"
+   - "Series A fintech companies in NYC"
+   - "Marketing agencies with creative culture"
 2. **domain** -- An `IndustryDomain` enum value (`sports_tech`, `fintech`, `health_tech`, `edtech`, `gaming`, `ecommerce`, `climate_tech`, `media`, `general`). If the user does not specify, this defaults to `general`.
 
 ---
