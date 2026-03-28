@@ -1,106 +1,183 @@
-"""Tests for src/pylon/engine/search.py — WebSearchEngine (Google Custom Search)."""
+"""Tests for src/pylon/engine/search.py — WebSearchEngine (Serper + Google CSE fallback)."""
 
+import json
 from unittest.mock import MagicMock, patch
+from urllib.error import HTTPError
 
 import pytest
 
 from pylon.engine.search import WebSearchEngine
 
 
-class TestWebSearchEngine:
-    def test_search_without_api_key(self):
-        engine = WebSearchEngine(api_key="", cse_id="")
+def _mock_response(data: dict) -> MagicMock:
+    """Create a mock HTTP response with JSON data."""
+    resp = MagicMock()
+    resp.read.return_value = json.dumps(data).encode()
+    resp.__enter__ = lambda s: s
+    resp.__exit__ = MagicMock(return_value=False)
+    return resp
+
+
+SERPER_RESULTS = {
+    "organic": [
+        {"title": "Acme Careers", "link": "https://acme.com/careers", "snippet": "Hiring ML engineers"},
+        {"title": "Acme Blog", "link": "https://acme.com/blog", "snippet": "CV research"},
+    ]
+}
+
+GOOGLE_CSE_RESULTS = {
+    "items": [
+        {"title": "Acme Google", "link": "https://acme.com/g", "snippet": "From Google CSE"},
+    ]
+}
+
+
+class TestNoKeys:
+    def test_not_available(self):
+        engine = WebSearchEngine()
         assert engine.is_available is False
-        assert engine.search("test query") == []
 
-    def test_search_context_without_api_key(self):
-        engine = WebSearchEngine(api_key="", cse_id="")
-        assert engine.search_context("test query") == ""
+    def test_search_returns_empty(self):
+        engine = WebSearchEngine()
+        assert engine.search("test") == []
 
-    def test_search_with_mock_google(self):
-        mock_service = MagicMock()
-        mock_cse = MagicMock()
-        mock_list = MagicMock()
-        mock_list.execute.return_value = {
-            "items": [
-                {
-                    "title": "Acme Corp Careers",
-                    "link": "https://acme.com/careers",
-                    "snippet": "We are hiring ML engineers",
-                },
-                {
-                    "title": "Acme Blog",
-                    "link": "https://acme.com/blog",
-                    "snippet": "Our latest CV research",
-                },
-            ]
-        }
-        mock_cse.list.return_value = mock_list
-        mock_service.cse.return_value = mock_cse
+    def test_search_context_returns_empty(self):
+        engine = WebSearchEngine()
+        assert engine.search_context("test") == ""
 
-        engine = WebSearchEngine(api_key="", cse_id="")
-        engine._service = mock_service
-        engine.cse_id = "test-cse-id"
 
+class TestSerperOnly:
+    def test_is_available(self):
+        engine = WebSearchEngine(serper_api_key="sk")
         assert engine.is_available is True
-        results = engine.search("acme corp", max_results=5)
+
+    def test_search_returns_results(self):
+        engine = WebSearchEngine(serper_api_key="sk")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response(SERPER_RESULTS)):
+            results = engine.search("acme", max_results=5)
         assert len(results) == 2
-        assert results[0]["title"] == "Acme Corp Careers"
+        assert results[0]["title"] == "Acme Careers"
         assert results[0]["url"] == "https://acme.com/careers"
-        assert results[0]["content"] == "We are hiring ML engineers"
+        assert results[0]["content"] == "Hiring ML engineers"
 
-    def test_search_context_concatenates(self):
-        mock_service = MagicMock()
-        mock_cse = MagicMock()
-        mock_list = MagicMock()
-        mock_list.execute.return_value = {
-            "items": [
-                {"title": "Page 1", "link": "https://a.com", "snippet": "Content A"},
-                {"title": "Page 2", "link": "https://b.com", "snippet": "Content B"},
-            ]
-        }
-        mock_cse.list.return_value = mock_list
-        mock_service.cse.return_value = mock_cse
+    def test_sends_correct_headers(self):
+        engine = WebSearchEngine(serper_api_key="my-key")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response(SERPER_RESULTS)) as mock:
+            engine.search("test", max_results=3)
+        req = mock.call_args[0][0]
+        assert req.get_header("X-api-key") == "my-key"
+        payload = json.loads(req.data)
+        assert payload["q"] == "test"
+        assert payload["num"] == 3
 
-        engine = WebSearchEngine(api_key="", cse_id="")
-        engine._service = mock_service
-        engine.cse_id = "test-cse-id"
+    def test_caps_at_100(self):
+        engine = WebSearchEngine(serper_api_key="sk")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response({"organic": []})) as mock:
+            engine.search("test", max_results=200)
+        payload = json.loads(mock.call_args[0][0].data)
+        assert payload["num"] == 100
 
-        text = engine.search_context("test", max_results=5)
-        assert "[Page 1](https://a.com)" in text
-        assert "Content A" in text
-        assert "[Page 2](https://b.com)" in text
-        assert "Content B" in text
-        assert "---" in text  # separator
+    def test_network_error_returns_empty(self):
+        engine = WebSearchEngine(serper_api_key="sk")
+        with patch("pylon.engine.search.urlopen", side_effect=ConnectionError("down")):
+            assert engine.search("test") == []
 
-    def test_search_handles_network_error(self):
-        mock_service = MagicMock()
-        mock_cse = MagicMock()
-        mock_list = MagicMock()
-        mock_list.execute.side_effect = ConnectionError("Network down")
-        mock_cse.list.return_value = mock_list
-        mock_service.cse.return_value = mock_cse
 
-        engine = WebSearchEngine(api_key="", cse_id="")
-        engine._service = mock_service
-        engine.cse_id = "test-cse-id"
+class TestGoogleCSEOnly:
+    def test_is_available(self):
+        engine = WebSearchEngine(google_api_key="gk", google_cse_id="cx")
+        assert engine.is_available is True
 
-        results = engine.search("test query")
-        assert results == []
+    def test_search_returns_results(self):
+        engine = WebSearchEngine(google_api_key="gk", google_cse_id="cx")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response(GOOGLE_CSE_RESULTS)):
+            results = engine.search("acme")
+        assert len(results) == 1
+        assert results[0]["title"] == "Acme Google"
+        assert results[0]["url"] == "https://acme.com/g"
 
-    def test_search_respects_max_results(self):
-        mock_service = MagicMock()
-        mock_cse = MagicMock()
-        mock_list = MagicMock()
-        mock_list.execute.return_value = {"items": []}
-        mock_cse.list.return_value = mock_list
-        mock_service.cse.return_value = mock_cse
+    def test_google_cse_caps_at_10(self):
+        engine = WebSearchEngine(google_api_key="gk", google_cse_id="cx")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response({"items": []})) as mock:
+            engine.search("test", max_results=50)
+        url = mock.call_args[0][0].full_url
+        assert "num=10" in url
 
-        engine = WebSearchEngine(api_key="", cse_id="")
-        engine._service = mock_service
-        engine.cse_id = "test-cse-id"
+    def test_missing_cse_id_not_available(self):
+        engine = WebSearchEngine(google_api_key="gk")
+        assert engine.is_available is False
 
-        engine.search("test", max_results=3)
-        mock_cse.list.assert_called_once_with(
-            q="test", cx="test-cse-id", num=3, start=1
-        )
+
+class TestFallback:
+    def test_serper_fails_falls_back_to_google(self):
+        """When Serper returns HTTP 429 (rate limited), Google CSE is used."""
+        engine = WebSearchEngine(serper_api_key="sk", google_api_key="gk", google_cse_id="cx")
+
+        serper_error = HTTPError("url", 429, "Too Many Requests", {}, None)
+        call_count = 0
+
+        def side_effect(req, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise serper_error
+            return _mock_response(GOOGLE_CSE_RESULTS)
+
+        with patch("pylon.engine.search.urlopen", side_effect=side_effect):
+            results = engine.search("test")
+
+        assert len(results) == 1
+        assert results[0]["title"] == "Acme Google"
+        assert call_count == 2
+
+    def test_serper_network_error_falls_back(self):
+        """Network error on Serper triggers Google CSE fallback."""
+        engine = WebSearchEngine(serper_api_key="sk", google_api_key="gk", google_cse_id="cx")
+
+        call_count = 0
+
+        def side_effect(req, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise ConnectionError("timeout")
+            return _mock_response(GOOGLE_CSE_RESULTS)
+
+        with patch("pylon.engine.search.urlopen", side_effect=side_effect):
+            results = engine.search("test")
+
+        assert len(results) == 1
+        assert results[0]["title"] == "Acme Google"
+
+    def test_both_fail_returns_empty(self):
+        """When both engines fail, returns empty list."""
+        engine = WebSearchEngine(serper_api_key="sk", google_api_key="gk", google_cse_id="cx")
+
+        with patch("pylon.engine.search.urlopen", side_effect=ConnectionError("all down")):
+            assert engine.search("test") == []
+
+    def test_serper_success_skips_google(self):
+        """When Serper succeeds, Google CSE is never called."""
+        engine = WebSearchEngine(serper_api_key="sk", google_api_key="gk", google_cse_id="cx")
+
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response(SERPER_RESULTS)) as mock:
+            results = engine.search("test")
+
+        assert len(results) == 2
+        assert results[0]["title"] == "Acme Careers"
+        mock.assert_called_once()  # only Serper called
+
+
+class TestSearchContext:
+    def test_concatenates_results(self):
+        engine = WebSearchEngine(serper_api_key="sk")
+        with patch("pylon.engine.search.urlopen", return_value=_mock_response(SERPER_RESULTS)):
+            text = engine.search_context("test")
+        assert "[Acme Careers](https://acme.com/careers)" in text
+        assert "Hiring ML engineers" in text
+        assert "[Acme Blog](https://acme.com/blog)" in text
+        assert "---" in text
+
+    def test_empty_when_no_results(self):
+        engine = WebSearchEngine()
+        assert engine.search_context("test") == ""

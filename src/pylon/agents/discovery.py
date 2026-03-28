@@ -9,7 +9,7 @@ import json
 import logging
 
 from pylon.agents.base import BaseSearchAgent
-from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, MAX_COMPANIES_PER_SEARCH
+from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, MAX_COMPANIES_PER_SEARCH, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
 from pylon.models import (
@@ -28,7 +28,7 @@ class DiscoveryAgent(BaseSearchAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="discovery")
-        self.search = WebSearchEngine(GOOGLE_API_KEY, GOOGLE_CSE_ID)
+        self.search = WebSearchEngine(SERPER_API_KEY, GOOGLE_API_KEY, GOOGLE_CSE_ID)
         self.logger = logging.getLogger("agent.discovery")
 
     def run(self, context: PipelineContext) -> RouterContract:

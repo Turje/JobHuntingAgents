@@ -9,7 +9,7 @@ import json
 import logging
 
 from pylon.agents.base import BaseAnalysisAgent
-from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID
+from pylon.config import GOOGLE_API_KEY, GOOGLE_CSE_ID, SERPER_API_KEY
 from pylon.core.claude_client import ClaudeClient
 from pylon.engine.search import WebSearchEngine
 from pylon.models import (
@@ -27,7 +27,7 @@ class ToolSuggestionsAgent(BaseAnalysisAgent):
 
     def __init__(self) -> None:
         self.client = ClaudeClient(agent_name="tools")
-        self.search = WebSearchEngine(GOOGLE_API_KEY, GOOGLE_CSE_ID)
+        self.search = WebSearchEngine(SERPER_API_KEY, GOOGLE_API_KEY, GOOGLE_CSE_ID)
         self.logger = logging.getLogger("agent.tools")
 
     def run(self, context: PipelineContext) -> RouterContract:

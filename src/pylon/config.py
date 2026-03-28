@@ -54,7 +54,10 @@ MAX_OUTREACH_PER_DAY: int = int(
 HOST: str = os.getenv("HOST", _settings.get("host", "127.0.0.1"))
 PORT: int = int(os.getenv("PORT", _settings.get("port", 8000)))
 
-# Google Custom Search (optional — for real web search)
+# Serper.dev (primary — full Google web search)
+SERPER_API_KEY: str = os.getenv("SERPER_API_KEY", "")
+
+# Google Custom Search (fallback when Serper credits exhausted)
 GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_CSE_ID: str = os.getenv("GOOGLE_CSE_ID", "")
 
