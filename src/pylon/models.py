@@ -8,9 +8,9 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +130,18 @@ class ResumeVersion(BaseModel):
     highlighted_projects: list[str] = Field(default_factory=list)
     tailored_bullets: list[str] = Field(default_factory=list)
 
+    @field_validator("highlighted_projects", "tailored_bullets", mode="before")
+    @classmethod
+    def _coerce_str_list(cls, v: Any) -> list[str]:
+        if not isinstance(v, list):
+            return [str(v)] if v else []
+        return [
+            item if isinstance(item, str)
+            else " — ".join(str(val) for val in item.values()) if isinstance(item, dict)
+            else str(item)
+            for item in v
+        ]
+
 
 class ToolSuggestion(BaseModel):
     """A buildable tool/product suggestion for impressing a company."""
@@ -150,6 +162,13 @@ class OutreachDraft(BaseModel):
     template_used: str = ""
     gmail_draft_id: str = ""
     status: OutreachStatus = OutreachStatus.DRAFT
+
+    @field_validator("personalization_notes", mode="before")
+    @classmethod
+    def _coerce_notes(cls, v: Any) -> str:
+        if isinstance(v, list):
+            return "; ".join(str(item) for item in v)
+        return str(v) if v else ""
 
 
 # ---------------------------------------------------------------------------
