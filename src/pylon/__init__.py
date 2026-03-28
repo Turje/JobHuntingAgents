@@ -1,1 +1,1 @@
-"""JobHuntingAgents — Multi-agent job hunting platform."""
+"""CastNet — Multi-agent job hunting platform."""

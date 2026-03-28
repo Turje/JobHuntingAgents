@@ -1,5 +1,5 @@
 """
-Actor-Critic workflow engine for JobHuntingAgents.
+Actor-Critic workflow engine for CastNet.
 Max 3 cycles: actor creates/refines → critic reviews → APPROVED or REQUEST_CHANGES.
 Adapted from 21Agents actor_critic.py.
 """

@@ -1,5 +1,5 @@
 """
-MIPROv2 optimization runner for JobHuntingAgents DSPy modules.
+MIPROv2 optimization runner for CastNet DSPy modules.
 
 CLI usage:
     python -m pylon.dspy_.optimize --agent discovery --output-dir data/optimized

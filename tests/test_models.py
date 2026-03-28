@@ -24,6 +24,7 @@ from pylon.models import (
     SkillsAnalysis,
     SwarmChannel,
     SwarmResult,
+    ToolSuggestion,
 )
 
 
@@ -134,6 +135,25 @@ class TestOutreachDraft:
 # PipelineContext
 # ---------------------------------------------------------------------------
 
+class TestToolSuggestion:
+    def test_create(self):
+        t = ToolSuggestion(
+            company_name="Acme",
+            tool_name="Widget API",
+            description="Builds cool widgets",
+            why_impressive="Solves their main pain point",
+            estimated_revenue_impact="$100K/year",
+        )
+        assert t.company_name == "Acme"
+        assert t.tool_name == "Widget API"
+
+    def test_defaults(self):
+        t = ToolSuggestion(company_name="Acme", tool_name="Test")
+        assert t.description == ""
+        assert t.why_impressive == ""
+        assert t.estimated_revenue_impact == ""
+
+
 class TestPipelineContext:
     def test_new_creates_uuid(self):
         ctx = PipelineContext.new("find football companies")
@@ -145,6 +165,12 @@ class TestPipelineContext:
         assert ctx.candidates == []
         assert ctx.profiles == []
         assert ctx.drafts == []
+
+    def test_tools_field(self):
+        ctx = PipelineContext.new("test")
+        assert ctx.tools == []
+        ctx.tools.append(ToolSuggestion(company_name="A", tool_name="Widget"))
+        assert len(ctx.tools) == 1
 
     def test_mutable_lists(self):
         ctx = PipelineContext.new("test")

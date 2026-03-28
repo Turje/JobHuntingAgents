@@ -132,3 +132,30 @@ class TestSessionStore:
         await store.save_excel_path(run_id, "/tmp/report.xlsx")
         session = await store.get_session(run_id)
         assert session["excel_path"] == "/tmp/report.xlsx"
+
+    async def test_save_and_get_tool_suggestions(self, store):
+        run_id = await store.create_session("test")
+        suggestions = [
+            {"company_name": "Acme", "tool_name": "Widget Builder", "description": "Builds widgets"},
+            {"company_name": "Beta", "tool_name": "API Monitor", "description": "Monitors APIs"},
+        ]
+        await store.save_tool_suggestions(run_id, suggestions)
+        result = await store.get_tool_suggestions(run_id)
+        assert len(result) == 2
+        assert result[0]["company_name"] == "Acme"
+        assert result[0]["tool_name"] == "Widget Builder"
+
+    async def test_save_and_get_uploaded_resume(self, store):
+        resume_id = await store.save_uploaded_resume("resume.pdf", "John Doe ML Engineer", "application/pdf")
+        assert resume_id is not None
+        resume = await store.get_uploaded_resume(resume_id)
+        assert resume is not None
+        assert resume["filename"] == "resume.pdf"
+        assert resume["content_text"] == "John Doe ML Engineer"
+
+    async def test_get_latest_uploaded_resume(self, store):
+        await store.save_uploaded_resume("old.pdf", "Old resume", "application/pdf")
+        await store.save_uploaded_resume("new.pdf", "New resume", "application/pdf")
+        latest = await store.get_latest_uploaded_resume()
+        assert latest is not None
+        assert latest["filename"] == "new.pdf"

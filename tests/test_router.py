@@ -1,4 +1,4 @@
-"""Tests for src/pylon/router.py — JobHuntingAgentsRouter."""
+"""Tests for src/pylon/router.py — CastNetRouter."""
 
 from unittest.mock import MagicMock, patch
 
@@ -16,11 +16,11 @@ from pylon.models import (
 @pytest.fixture
 def router():
     with patch("pylon.agents.discovery.ClaudeClient"):
-        from pylon.router import JobHuntingAgentsRouter
-        return JobHuntingAgentsRouter()
+        from pylon.router import CastNetRouter
+        return CastNetRouter()
 
 
-class TestJobHuntingAgentsRouter:
+class TestCastNetRouter:
     def test_emergency_intent(self, router):
         ctx, contract = router.handle_intent("stop everything")
         assert ctx.intent.priority == IntentPriority.EMERGENCY

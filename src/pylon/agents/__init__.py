@@ -1,1 +1,1 @@
-"""JobHuntingAgents agents — specialized job-hunting agents."""
+"""CastNet agents — specialized job-hunting agents."""

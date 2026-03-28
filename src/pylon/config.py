@@ -1,5 +1,5 @@
 """
-YAML + .env config loader for JobHuntingAgents.
+YAML + .env config loader for CastNet.
 """
 
 from __future__ import annotations

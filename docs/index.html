@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobHuntingAgents</title>
+    <title>CastNet</title>
     <style>
         :root {
             --bg: #0d1117;
@@ -266,6 +266,37 @@
         }
         .outreach-actions { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
 
+        /* Tool Suggestion card */
+        .tool-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px;
+            margin-bottom: 8px;
+        }
+        .tool-card-name { font-weight: 700; font-size: 0.9rem; color: var(--accent-teal); margin-bottom: 4px; }
+        .tool-card-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; }
+        .tool-card-why { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-bottom: 4px; }
+        .tool-card-revenue {
+            font-size: 0.75rem; padding: 2px 8px; border-radius: 4px;
+            background: rgba(63,185,80,0.12); color: var(--accent-green);
+            display: inline-block; font-weight: 600;
+        }
+        .tool-card-actions { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+
+        /* Resume upload */
+        .resume-upload-bar {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+        .resume-upload-bar .filename {
+            font-size: 0.85rem; color: var(--accent-green); font-weight: 600;
+        }
+        .resume-upload-bar .preview {
+            font-size: 0.78rem; color: var(--text-dim); max-width: 400px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
         /* ---- EMPTY / TOAST / OVERLAY ---- */
         .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
         .empty-state h3 { font-size: 1.3rem; margin-bottom: 8px; color: var(--text); }
@@ -306,7 +337,7 @@
 
     <div class="header">
         <div class="header-left">
-            <span class="header-title">JobHuntingAgents</span>
+            <span class="header-title">CastNet</span>
         </div>
         <div class="connect-bar">
             <span class="mode-badge claude hidden" id="modeBadge">Claude</span>
@@ -344,6 +375,7 @@ const STEPS = [
     { key: 'discovery', label: 'Discovery' },
     { key: 'research', label: 'Research' },
     { key: 'skills', label: 'Skills' },
+    { key: 'tools', label: 'Tools' },
     { key: 'contact', label: 'Contacts' },
     { key: 'resume', label: 'Resume' },
     { key: 'outreach', label: 'Outreach' },
@@ -361,7 +393,8 @@ const S = {
     ws: null,
     steps: {},
     expanded: {},   // companyName -> true/false
-    data: { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [] },
+    data: { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] },
+    uploadedResume: null,
 };
 
 // =========================================================================
@@ -375,18 +408,20 @@ async function api(path, opts = {}) {
 const json = (p, o) => api(p, o).then(r => r.json());
 
 async function fetchAll(rid) {
-    const [co, pr, sk, ct, rs, dr] = await Promise.all([
+    const [co, pr, sk, ct, rs, dr, ts] = await Promise.all([
         json(`/sessions/${rid}/companies`),
         json(`/sessions/${rid}/profiles`),
         json(`/sessions/${rid}/skills`),
         json(`/sessions/${rid}/contacts`),
         json(`/sessions/${rid}/resumes`),
         json(`/sessions/${rid}/drafts`),
+        json(`/sessions/${rid}/tool-suggestions`),
     ]);
     return {
         companies: co.companies || [], profiles: pr.profiles || [],
         skills: sk.skills || [], contacts: ct.contacts || [],
         resumes: rs.resumes || [], drafts: dr.drafts || [],
+        tool_suggestions: ts.tool_suggestions || [],
     };
 }
 
@@ -450,6 +485,12 @@ function skillsFor(name) { return S.data.skills.find(s => s.company_name === nam
 function contactsFor(name) { return S.data.contacts.filter(c => c.company_name === name); }
 function resumeFor(name) { return S.data.resumes.find(r => r.company_name === name) || null; }
 function draftsFor(name) { return S.data.drafts.filter(d => d.company_name === name); }
+function toolsFor(name) {
+    return S.data.tool_suggestions.filter(t => {
+        const td = jp(t.data_json);
+        return td.company_name === name || t.company_name === name;
+    });
+}
 
 // =========================================================================
 // RENDER
@@ -480,6 +521,7 @@ function renderContent() {
     }
 
     let html = renderStepper();
+    html += renderResumeUpload();
     html += renderStats();
 
     // Render each company as a rich card
@@ -505,12 +547,13 @@ function renderStepper() {
 function renderStats() {
     const d = S.data;
     const nCo = d.companies.length, nPr = d.profiles.length, nSk = d.skills.length;
-    const nCt = d.contacts.length, nDr = d.drafts.length;
+    const nTs = d.tool_suggestions.length, nCt = d.contacts.length, nDr = d.drafts.length;
     if (!nCo) return '';
     let h = '<div class="stats-bar">';
     h += `<div class="stat"><span class="stat-num">${nCo}</span><span class="stat-label">Companies</span></div>`;
     if (nPr) h += `<div class="stat"><span class="stat-num">${nPr}</span><span class="stat-label">Profiled</span></div>`;
     if (nSk) h += `<div class="stat"><span class="stat-num">${nSk}</span><span class="stat-label">Analyzed</span></div>`;
+    if (nTs) h += `<div class="stat"><span class="stat-num">${nTs}</span><span class="stat-label">Tools</span></div>`;
     if (nCt) h += `<div class="stat"><span class="stat-num">${nCt}</span><span class="stat-label">Contacts</span></div>`;
     if (nDr) h += `<div class="stat"><span class="stat-num">${nDr}</span><span class="stat-label">Drafts</span></div>`;
     h += `<button class="btn btn-accent" onclick="onDownloadExcel()" style="margin-left:auto">Download Excel</button>`;
@@ -589,6 +632,26 @@ function renderCompanyCard(c) {
             h += `</div>`;
         }
 
+        // ---- TOOL SUGGESTIONS ----
+        const tools = toolsFor(name);
+        if (tools.length) {
+            h += `<div class="cc-section">`;
+            h += `<div class="cc-section-title"><span class="icon">&#128736;</span> Build to Impress</div>`;
+            tools.forEach(t => {
+                const td = jp(t.data_json);
+                h += `<div class="tool-card">`;
+                h += `<div class="tool-card-name">${esc(td.tool_name || t.tool_name)}</div>`;
+                if (td.description) h += `<div class="tool-card-desc">${esc(td.description)}</div>`;
+                if (td.why_impressive) h += `<div class="tool-card-why">${esc(td.why_impressive)}</div>`;
+                if (td.estimated_revenue_impact) h += `<span class="tool-card-revenue">${esc(td.estimated_revenue_impact)}</span>`;
+                if (S.uploadedResume) {
+                    h += `<div class="tool-card-actions"><button class="btn btn-accent" onclick="onTailorResume(event,'${esc(name)}','${esc(td.tool_name || '')}','${esc((td.description || '').replace(/'/g, "\\'"))}')">Tailor Resume</button></div>`;
+                }
+                h += `</div>`;
+            });
+            h += `</div>`;
+        }
+
         // ---- CONTACTS / MANAGEMENT ----
         if (cts.length) {
             h += `<div class="cc-section">`;
@@ -664,7 +727,7 @@ async function onConnect() {
             S.connected = true; setDot('connected');
             setModeBadge(d.dspy_enabled);
             document.getElementById('overlay').classList.add('hidden');
-            toast('Connected', 'success'); await loadSessions();
+            toast('Connected', 'success'); await loadSessions(); await loadUploadedResume();
         } else throw 0;
     } catch { S.connected = false; setDot('disconnected'); document.getElementById('overlay').classList.remove('hidden'); toast('Cannot reach backend', 'error'); }
 }
@@ -676,7 +739,7 @@ async function onSearch() {
     try {
         const r = await json('/search', { method: 'POST', body: JSON.stringify({ query: q }) });
         S.runId = r.run_id; S.steps = {}; S.expanded = {};
-        S.data = { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [] };
+        S.data = { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] };
         toast('Search started', 'info');
         wsConnect(r.run_id); render(); await loadSessions();
     } catch (e) { toast('Search failed: ' + e.message, 'error'); }
@@ -710,7 +773,7 @@ async function onDeleteSession(evt, rid) {
     try {
         await api(`/sessions/${rid}`, { method: 'DELETE' });
         S.sessions = S.sessions.filter(s => s.run_id !== rid);
-        if (S.runId === rid) { S.runId = null; S.data = { companies:[], profiles:[], skills:[], contacts:[], resumes:[], drafts:[] }; }
+        if (S.runId === rid) { S.runId = null; S.data = { companies:[], profiles:[], skills:[], contacts:[], resumes:[], drafts:[], tool_suggestions:[] }; }
         toast('Session deleted', 'success'); render();
     } catch (e) { toast('Delete failed: ' + e.message, 'error'); }
 }
@@ -726,10 +789,63 @@ async function onDownloadExcel() {
 }
 
 // =========================================================================
+// RESUME UPLOAD & TOOL TAILORING
+// =========================================================================
+function renderResumeUpload() {
+    let h = '<div class="resume-upload-bar">';
+    h += '<input type="file" id="resumeFileInput" accept=".pdf,.docx" style="display:none" onchange="onResumeUpload(event)" />';
+    h += `<button class="btn btn-outline" onclick="document.getElementById('resumeFileInput').click()">Upload Resume</button>`;
+    if (S.uploadedResume) {
+        h += `<span class="filename">${esc(S.uploadedResume.filename)}</span>`;
+        h += `<span class="preview">${esc((S.uploadedResume.content_text || '').slice(0, 120))}...</span>`;
+    } else {
+        h += `<span style="font-size:0.82rem;color:var(--text-dim)">Upload PDF/DOCX to enable resume tailoring per tool</span>`;
+    }
+    h += '</div>';
+    return h;
+}
+
+async function onResumeUpload(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const r = await fetch(S.url + '/upload-resume', { method: 'POST', body: formData });
+        if (!r.ok) { const e = await r.json(); toast(e.error || 'Upload failed', 'error'); return; }
+        const data = await r.json();
+        S.uploadedResume = { filename: data.filename, content_text: data.content_text, id: data.id };
+        toast('Resume uploaded', 'success');
+        render();
+    } catch (e) { toast('Upload failed: ' + e.message, 'error'); }
+}
+
+async function onTailorResume(evt, company, toolName, toolDesc) {
+    evt.stopPropagation();
+    const btn = evt.target;
+    btn.disabled = true; btn.textContent = 'Tailoring...';
+    try {
+        await json(`/sessions/${S.runId}/update-resume-for-tool`, {
+            method: 'POST',
+            body: JSON.stringify({ company_name: company, tool_name: toolName, tool_description: toolDesc }),
+        });
+        toast(`Resume tailored for ${toolName}`, 'success');
+        await loadData(S.runId);
+    } catch (e) { toast('Tailoring failed: ' + e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Tailor Resume'; }
+}
+
+// =========================================================================
 // LOADERS
 // =========================================================================
 async function loadSessions() { try { S.sessions = (await json('/sessions')).sessions || []; renderSidebar(); } catch {} }
 async function loadData(rid) { try { S.data = await fetchAll(rid); render(); } catch { toast('Failed to load data', 'error'); } }
+async function loadUploadedResume() {
+    try {
+        const r = await json('/uploaded-resume');
+        if (r.resume) S.uploadedResume = { filename: r.resume.filename, content_text: r.resume.content_text, id: r.resume.id };
+    } catch {}
+}
 
 // =========================================================================
 // INIT
@@ -746,7 +862,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             S.connected = true; setDot('connected');
             setModeBadge(d.dspy_enabled);
             document.getElementById('overlay').classList.add('hidden');
-            await loadSessions();
+            await loadSessions(); await loadUploadedResume();
         } else throw 0;
     } catch { setDot('disconnected'); document.getElementById('overlay').classList.remove('hidden'); }
 });

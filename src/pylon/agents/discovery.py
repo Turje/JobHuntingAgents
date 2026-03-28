@@ -1,6 +1,6 @@
 """
 DiscoveryAgent — converts free-text queries into a list of CompanyCandidate objects.
-First stage of the JobHuntingAgents pipeline.
+First stage of the CastNet pipeline.
 """
 
 from __future__ import annotations

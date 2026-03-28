@@ -1,5 +1,5 @@
 """
-All Pydantic models for the JobHuntingAgents platform.
+All Pydantic models for the CastNet platform.
 Single source of truth — no scattered model files.
 """
 
@@ -131,6 +131,15 @@ class ResumeVersion(BaseModel):
     tailored_bullets: list[str] = Field(default_factory=list)
 
 
+class ToolSuggestion(BaseModel):
+    """A buildable tool/product suggestion for impressing a company."""
+    company_name: str
+    tool_name: str
+    description: str = ""
+    why_impressive: str = ""
+    estimated_revenue_impact: str = ""
+
+
 class OutreachDraft(BaseModel):
     """Personalized cold email by OutreachAgent."""
     company_name: str
@@ -156,6 +165,7 @@ class PipelineContext(BaseModel):
     candidates: list[CompanyCandidate] = Field(default_factory=list)
     profiles: list[CompanyProfile] = Field(default_factory=list)
     skills: list[SkillsAnalysis] = Field(default_factory=list)
+    tools: list[ToolSuggestion] = Field(default_factory=list)
     contacts: list[ContactInfo] = Field(default_factory=list)
     resumes: list[ResumeVersion] = Field(default_factory=list)
     drafts: list[OutreachDraft] = Field(default_factory=list)

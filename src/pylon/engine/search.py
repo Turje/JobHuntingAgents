@@ -1,5 +1,5 @@
 """
-Web search integration for JobHuntingAgents.
+Web search integration for CastNet.
 Uses Tavily API for real web search, with graceful fallback when no API key is configured.
 """
 

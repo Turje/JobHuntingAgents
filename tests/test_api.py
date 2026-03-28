@@ -84,6 +84,33 @@ class TestAPI:
         resp = await ac.get(f"/sessions/{run_id}/excel")
         assert resp.status_code == 404
 
+    async def test_get_tool_suggestions(self, client):
+        ac, store = client
+        run_id = await store.create_session("test")
+        await store.save_tool_suggestions(run_id, [
+            {"company_name": "Acme", "tool_name": "Widget API", "description": "Build widgets"},
+        ])
+        resp = await ac.get(f"/sessions/{run_id}/tool-suggestions")
+        assert resp.status_code == 200
+        assert len(resp.json()["tool_suggestions"]) == 1
+
+    async def test_upload_resume(self, client):
+        ac, _ = client
+        # Create a fake PDF-like file (just text, not a real PDF)
+        import io
+        # We test the endpoint exists and rejects non-PDF/DOCX
+        resp = await ac.post(
+            "/upload-resume",
+            files={"file": ("test.txt", io.BytesIO(b"hello"), "text/plain")},
+        )
+        assert resp.status_code == 400
+
+    async def test_get_uploaded_resume_none(self, client):
+        ac, _ = client
+        resp = await ac.get("/uploaded-resume")
+        assert resp.status_code == 200
+        assert resp.json()["resume"] is None
+
     async def test_get_excel_download(self, client, tmp_path):
         ac, store = client
         run_id = await store.create_session("test")

@@ -1,4 +1,4 @@
-# JobHuntingAgents — Multi-Agent Job Hunting Platform
+# CastNet — Multi-Agent Job Hunting Platform
 
 ## Architecture
 - **Router** orchestration with 7-priority intent classification
@@ -21,7 +21,7 @@
 ## Pipeline Flow
 ```
 User query → Router → Intent → AC Planning → FullSearchPipeline
-  → Discovery → Research → Skills → Contact → Resume → Outreach → Excel → [Gmail]
+  → Discovery → Research → Skills → Tools → Contact → Resume → Outreach → Excel → [Gmail]
 ```
 
 ## Commands

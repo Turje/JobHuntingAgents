@@ -1,6 +1,6 @@
 """
 FullSearchPipeline — orchestrates all agents through the search pipeline.
-Discover → Research → Skills → Contact → Resume → Outreach → Excel → [Gmail]
+Discover → Research → Skills → Tools → Contact → Resume → Outreach → Excel → [Gmail]
 """
 
 from __future__ import annotations
@@ -35,6 +35,7 @@ class FullSearchPipeline:
         # Layer 2+ agents are lazily imported when needed
         self._research = None
         self._skills = None
+        self._tools = None
         self._contact = None
         self._resume = None
         self._outreach = None
@@ -92,37 +93,46 @@ class FullSearchPipeline:
             steps_completed += 1
             total_issues += rc.critical_issues
 
-        # Step 4: Contact (Layer 3)
+        # Step 4: Tool Suggestions (Layer 2)
+        if self._tools:
+            _notify("tools_start", {"count": len(context.profiles)})
+            _logger.info("Pipeline step 4: Tool Suggestions")
+            rc = self._tools.run(context)
+            _notify("tools_complete", {"count": len(context.tools)})
+            steps_completed += 1
+            total_issues += rc.critical_issues
+
+        # Step 5: Contact (Layer 3)
         if self._contact:
             _notify("contact_start", {"count": len(context.candidates)})
-            _logger.info("Pipeline step 4: Contact Search")
+            _logger.info("Pipeline step 5: Contact Search")
             rc = self._contact.run(context)
             _notify("contact_complete", {"count": len(context.contacts)})
             steps_completed += 1
             total_issues += rc.critical_issues
 
-        # Step 5: Resume (Layer 4)
+        # Step 6: Resume (Layer 4)
         if self._resume:
             _notify("resume_start", {"count": len(context.candidates)})
-            _logger.info("Pipeline step 5: Resume Tailoring")
+            _logger.info("Pipeline step 6: Resume Tailoring")
             rc = self._resume.run(context)
             _notify("resume_complete", {"count": len(context.resumes)})
             steps_completed += 1
             total_issues += rc.critical_issues
 
-        # Step 6: Outreach (Layer 4)
+        # Step 7: Outreach (Layer 4)
         if self._outreach:
             _notify("outreach_start", {"count": len(context.contacts)})
-            _logger.info("Pipeline step 6: Outreach Drafts")
+            _logger.info("Pipeline step 7: Outreach Drafts")
             rc = self._outreach.run(context)
             _notify("outreach_complete", {"count": len(context.drafts)})
             steps_completed += 1
             total_issues += rc.critical_issues
 
-        # Step 7: Excel Export (Layer 3)
+        # Step 8: Excel Export (Layer 3)
         if self._excel:
             _notify("excel_start", {})
-            _logger.info("Pipeline step 7: Excel Export")
+            _logger.info("Pipeline step 8: Excel Export")
             context.excel_path = self._excel.export(context)
             _notify("excel_complete", {"path": context.excel_path})
             steps_completed += 1

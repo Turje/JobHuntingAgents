@@ -1,5 +1,5 @@
 """
-FastAPI + WebSocket entry point for JobHuntingAgents.
+FastAPI + WebSocket entry point for CastNet.
 Provides REST endpoints for search pipeline and WebSocket for live progress.
 """
 
@@ -13,7 +13,7 @@ from typing import Any
 
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -34,13 +34,13 @@ _ws_connections: dict[str, list[WebSocket]] = {}
 async def lifespan(app: FastAPI):
     """Initialize store on startup."""
     await _store.initialize()
-    _logger.info("JobHuntingAgents started — store initialized")
+    _logger.info("CastNet started — store initialized")
     yield
-    _logger.info("JobHuntingAgents shutting down")
+    _logger.info("CastNet shutting down")
 
 
 app = FastAPI(
-    title="JobHuntingAgents",
+    title="CastNet",
     description="Multi-agent job hunting platform",
     version="0.1.0",
     lifespan=lifespan,
@@ -56,8 +56,8 @@ app.add_middleware(
 
 def _get_router():
     """Lazy import to avoid ClaudeClient init at module level."""
-    from pylon.router import JobHuntingAgentsRouter
-    return JobHuntingAgentsRouter()
+    from pylon.router import CastNetRouter
+    return CastNetRouter()
 
 
 # ---------------------------------------------------------------------------
@@ -113,6 +113,10 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
             if ctx.skills:
                 await _store.save_skills(
                     run_id, [s.model_dump() for s in ctx.skills]
+                )
+            if ctx.tools:
+                await _store.save_tool_suggestions(
+                    run_id, [t.model_dump() for t in ctx.tools]
                 )
             if ctx.contacts:
                 await _store.save_contacts(
@@ -223,6 +227,171 @@ async def get_excel(run_id: str):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         filename=Path(excel_path).name,
     )
+
+
+@app.get("/sessions/{run_id}/tool-suggestions")
+async def get_tool_suggestions(run_id: str) -> JSONResponse:
+    """Get tool suggestions for a session."""
+    suggestions = await _store.get_tool_suggestions(run_id)
+    return JSONResponse({"tool_suggestions": suggestions})
+
+
+@app.post("/upload-resume")
+async def upload_resume(file: UploadFile) -> JSONResponse:
+    """Upload a resume (PDF or DOCX), extract text, and store it."""
+    if not file.filename:
+        return JSONResponse({"error": "No file provided"}, status_code=400)
+
+    content_type = file.content_type or ""
+    raw = await file.read()
+
+    if file.filename.lower().endswith(".pdf") or "pdf" in content_type:
+        text = _extract_pdf_text(raw)
+    elif file.filename.lower().endswith(".docx") or "wordprocessing" in content_type:
+        text = _extract_docx_text(raw)
+    else:
+        return JSONResponse(
+            {"error": "Unsupported file type. Upload PDF or DOCX."}, status_code=400
+        )
+
+    if not text.strip():
+        return JSONResponse({"error": "Could not extract text from file"}, status_code=400)
+
+    resume_id = await _store.save_uploaded_resume(file.filename, text, content_type)
+    return JSONResponse({
+        "id": resume_id,
+        "filename": file.filename,
+        "content_text": text[:500],
+        "length": len(text),
+    })
+
+
+@app.get("/uploaded-resume")
+async def get_uploaded_resume() -> JSONResponse:
+    """Get the most recently uploaded resume."""
+    resume = await _store.get_latest_uploaded_resume()
+    if not resume:
+        return JSONResponse({"resume": None})
+    return JSONResponse({"resume": resume})
+
+
+@app.post("/sessions/{run_id}/update-resume-for-tool")
+async def update_resume_for_tool(run_id: str, payload: dict[str, Any]) -> JSONResponse:
+    """Re-tailor resume for a specific company + tool suggestion."""
+    company_name = payload.get("company_name", "")
+    tool_name = payload.get("tool_name", "")
+    tool_description = payload.get("tool_description", "")
+
+    if not company_name or not tool_name:
+        return JSONResponse(
+            {"error": "company_name and tool_name are required"}, status_code=400
+        )
+
+    # Load uploaded resume
+    resume_data = await _store.get_latest_uploaded_resume()
+    if not resume_data:
+        return JSONResponse({"error": "No uploaded resume found"}, status_code=400)
+
+    resume_text = resume_data.get("content_text", "")
+
+    # Load company context
+    profiles = await _store.get_profiles(run_id)
+    skills = await _store.get_skills(run_id)
+
+    profile_data = {}
+    for p in profiles:
+        pd = json.loads(p.get("data_json", "{}"))
+        if pd.get("company_name") == company_name:
+            profile_data = pd
+            break
+
+    skills_data = {}
+    for s in skills:
+        sd = json.loads(s.get("data_json", "{}"))
+        if sd.get("company_name") == company_name:
+            skills_data = sd
+            break
+
+    # Call ResumeAgent with tool-tailoring context
+    try:
+        from pylon.core.claude_client import ClaudeClient
+
+        client = ClaudeClient(agent_name="resume_tailor")
+        system_prompt = (
+            "You are a resume tailoring expert. Given a user's resume text, a target company, "
+            "and a specific tool/product they plan to build for that company, re-write the resume "
+            "to emphasize skills and experience relevant to building that tool at that company.\n\n"
+            "Return a JSON object with:\n"
+            '- "company_name": the company name\n'
+            '- "tailored_summary": a 2-3 sentence professional summary pitched around the tool\n'
+            '- "emphasis_areas": list of skill areas to highlight\n'
+            '- "highlighted_projects": list of relevant projects from the resume\n'
+            '- "tailored_bullets": list of tailored bullet points\n'
+            "Return ONLY the JSON object."
+        )
+
+        user_message = (
+            f"Resume:\n{resume_text}\n\n"
+            f"Target Company: {company_name}\n"
+            f"Company Profile: {json.dumps(profile_data)}\n"
+            f"Skills Data: {json.dumps(skills_data)}\n\n"
+            f"Tool to Build: {tool_name}\n"
+            f"Tool Description: {tool_description}\n\n"
+            "Tailor this resume for someone who will build this tool at this company."
+        )
+
+        response = client.call(system_prompt=system_prompt, user_message=user_message)
+
+        # Parse response
+        try:
+            # Strip markdown fences if present
+            text = response.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+                if text.endswith("```"):
+                    text = text[:-3]
+            resume_version = json.loads(text)
+        except json.JSONDecodeError:
+            resume_version = {
+                "company_name": company_name,
+                "tailored_summary": response[:500],
+                "emphasis_areas": [],
+                "highlighted_projects": [],
+                "tailored_bullets": [],
+            }
+
+        resume_version["company_name"] = company_name
+        await _store.save_resumes(run_id, [resume_version])
+        return JSONResponse({"status": "updated", "resume": resume_version})
+
+    except Exception as exc:
+        _logger.error("Resume tailoring for tool failed: %s", exc)
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+def _extract_pdf_text(raw: bytes) -> str:
+    """Extract text from PDF bytes using PyPDF2."""
+    try:
+        import io
+        from PyPDF2 import PdfReader
+        reader = PdfReader(io.BytesIO(raw))
+        pages = [page.extract_text() or "" for page in reader.pages]
+        return "\n\n".join(pages)
+    except Exception as exc:
+        _logger.warning("PDF extraction failed: %s", exc)
+        return ""
+
+
+def _extract_docx_text(raw: bytes) -> str:
+    """Extract text from DOCX bytes using python-docx."""
+    try:
+        import io
+        import docx
+        doc = docx.Document(io.BytesIO(raw))
+        return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+    except Exception as exc:
+        _logger.warning("DOCX extraction failed: %s", exc)
+        return ""
 
 
 # ---------------------------------------------------------------------------

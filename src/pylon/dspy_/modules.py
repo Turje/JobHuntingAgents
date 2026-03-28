@@ -22,6 +22,7 @@ from pylon.dspy_.signatures import (
     FindContacts,
     PlanSearch,
     ResearchCompanies,
+    SuggestTools,
     TailorResumes,
 )
 
@@ -100,6 +101,27 @@ class SkillsModule(dspy.Module):
         return self.predict(
             query=query,
             profiles_json=profiles_json,
+            web_context=web_context,
+        )
+
+
+class ToolSuggestionsModule(dspy.Module):
+    """DSPy module for tool suggestions."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.predict = dspy.ChainOfThought(SuggestTools)
+        _load_state(self, "tools")
+
+    def forward(
+        self,
+        query: str,
+        companies_json: str,
+        web_context: str = "",
+    ) -> dspy.Prediction:
+        return self.predict(
+            query=query,
+            companies_json=companies_json,
             web_context=web_context,
         )
 

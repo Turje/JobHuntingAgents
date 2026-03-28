@@ -1,1 +1,1 @@
-"""JobHuntingAgents workflows — Actor-Critic and Swarm engines."""
+"""CastNet workflows — Actor-Critic and Swarm engines."""

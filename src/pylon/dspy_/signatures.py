@@ -1,5 +1,5 @@
 """
-DSPy Signatures for all JobHuntingAgents agents.
+DSPy Signatures for all CastNet agents.
 Each signature has typed I/O; docstrings become the optimizable instructions.
 """
 
@@ -66,6 +66,24 @@ class AnalyzeSkills(dspy.Signature):
     )
     analyses_json: str = dspy.OutputField(
         desc="JSON array of SkillsAnalysis objects"
+    )
+
+
+class SuggestTools(dspy.Signature):
+    """Suggest buildable tools, products, or demos for each company that the job
+    seeker could create to impress hiring managers. Use the company's tech stack,
+    ML use cases, culture, and hiring signals. Return a JSON array with
+    tool_name, description, why_impressive, estimated_revenue_impact per company."""
+
+    query: str = dspy.InputField(desc="The job seeker's search query")
+    companies_json: str = dspy.InputField(
+        desc="JSON array of companies with profiles and skills data"
+    )
+    web_context: str = dspy.InputField(
+        desc="Optional web data about company engineering challenges", default=""
+    )
+    suggestions_json: str = dspy.OutputField(
+        desc="JSON array of ToolSuggestion objects with company_name, tool_name, description, why_impressive, estimated_revenue_impact"
     )
 
 

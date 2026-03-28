@@ -1,6 +1,6 @@
 """
-JobHuntingAgents router — intent classification → dispatch → workflows.
-Renamed from PylonRouter to JobHuntingAgentsRouter.
+CastNet router — intent classification → dispatch → workflows.
+Renamed from PylonRouter to CastNetRouter.
 Handles DISCOVER, EMERGENCY, REVIEW, and all other intents.
 """
 
@@ -25,9 +25,9 @@ from pylon.workflows.actor_critic import ActorCriticWorkflow
 _logger = logging.getLogger("router")
 
 
-class JobHuntingAgentsRouter:
+class CastNetRouter:
     """
-    Main orchestrator for the JobHuntingAgents platform.
+    Main orchestrator for the CastNet platform.
     Classifies user intent, runs AC planning when needed, dispatches pipeline.
     """
 

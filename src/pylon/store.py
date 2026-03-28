@@ -1,5 +1,5 @@
 """
-SQLite persistence for JobHuntingAgents sessions, companies, contacts, and drafts.
+SQLite persistence for CastNet sessions, companies, contacts, and drafts.
 Uses aiosqlite with WAL mode for async access.
 """
 
@@ -251,11 +251,68 @@ class SessionStore:
                 if not await cursor.fetchone():
                     return False
             # Delete all related data
-            for table in ("companies", "contacts", "drafts", "profiles", "skills", "resumes", "events"):
+            for table in ("companies", "contacts", "drafts", "profiles", "skills", "resumes", "tool_suggestions", "events"):
                 await db.execute(f"DELETE FROM {table} WHERE run_id = ?", (run_id,))
             await db.execute("DELETE FROM sessions WHERE run_id = ?", (run_id,))
             await db.commit()
             return True
+
+    async def save_tool_suggestions(self, run_id: str, suggestions: list[dict[str, Any]]) -> None:
+        """Save tool suggestions for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            for s in suggestions:
+                await db.execute(
+                    "INSERT INTO tool_suggestions (run_id, company_name, tool_name, data_json) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        run_id,
+                        s.get("company_name", ""),
+                        s.get("tool_name", ""),
+                        json.dumps(s),
+                    ),
+                )
+            await db.commit()
+
+    async def get_tool_suggestions(self, run_id: str) -> list[dict[str, Any]]:
+        """Get all tool suggestions for a session."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM tool_suggestions WHERE run_id = ?", (run_id,)
+            ) as cursor:
+                return [dict(row) async for row in cursor]
+
+    async def save_uploaded_resume(self, filename: str, content_text: str, content_type: str) -> int:
+        """Save an uploaded resume. Returns the row id."""
+        now = datetime.now(timezone.utc).isoformat()
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                "INSERT INTO uploaded_resumes (filename, content_text, content_type, created_at) "
+                "VALUES (?, ?, ?, ?)",
+                (filename, content_text, content_type, now),
+            )
+            await db.commit()
+            return cursor.lastrowid
+
+    async def get_uploaded_resume(self, resume_id: int) -> Optional[dict[str, Any]]:
+        """Get a specific uploaded resume by id."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM uploaded_resumes WHERE id = ?", (resume_id,)
+            ) as cursor:
+                row = await cursor.fetchone()
+                return dict(row) if row else None
+
+    async def get_latest_uploaded_resume(self) -> Optional[dict[str, Any]]:
+        """Get the most recently uploaded resume."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM uploaded_resumes ORDER BY created_at DESC LIMIT 1"
+            ) as cursor:
+                row = await cursor.fetchone()
+                return dict(row) if row else None
 
     async def record_event(self, run_id: str, event_type: str, payload: dict[str, Any]) -> None:
         """Record a pipeline event for audit trail."""
@@ -339,6 +396,23 @@ CREATE TABLE IF NOT EXISTS resumes (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS tool_suggestions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT NOT NULL REFERENCES sessions(run_id),
+    company_name TEXT NOT NULL,
+    tool_name TEXT NOT NULL,
+    data_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS uploaded_resumes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT NOT NULL,
+    content_text TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL REFERENCES sessions(run_id),
@@ -354,4 +428,5 @@ CREATE INDEX IF NOT EXISTS idx_events_run ON events(run_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_run ON profiles(run_id);
 CREATE INDEX IF NOT EXISTS idx_skills_run ON skills(run_id);
 CREATE INDEX IF NOT EXISTS idx_resumes_run ON resumes(run_id);
+CREATE INDEX IF NOT EXISTS idx_tool_suggestions_run ON tool_suggestions(run_id);
 """

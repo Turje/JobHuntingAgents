@@ -1,1 +1,1 @@
-"""JobHuntingAgents engine — external service integrations."""
+"""CastNet engine — external service integrations."""

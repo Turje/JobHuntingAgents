@@ -1,1 +1,1 @@
-"""JobHuntingAgents strategy modules."""
+"""CastNet strategy modules."""

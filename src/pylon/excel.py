@@ -55,12 +55,17 @@ class ExcelManager:
             ws_skills = wb.create_sheet("Skills")
             self._write_skills(ws_skills, context)
 
-        # Tab 4: Contacts (if available)
+        # Tab 4: Tool Suggestions (if available)
+        if context.tools:
+            ws_tools = wb.create_sheet("Tool Suggestions")
+            self._write_tools(ws_tools, context)
+
+        # Tab 5: Contacts (if available)
         if context.contacts:
             ws_contacts = wb.create_sheet("Contacts")
             self._write_contacts(ws_contacts, context)
 
-        # Tab 5: Outreach (if available)
+        # Tab 6: Outreach (if available)
         if context.drafts:
             ws_outreach = wb.create_sheet("Outreach")
             self._write_outreach(ws_outreach, context)
@@ -89,6 +94,7 @@ class ExcelManager:
             ("Companies Found", len(context.candidates)),
             ("Profiles Researched", len(context.profiles)),
             ("Skills Analyzed", len(context.skills)),
+            ("Tools Suggested", len(context.tools)),
             ("Contacts Found", len(context.contacts)),
             ("Drafts Created", len(context.drafts)),
         ]
@@ -134,6 +140,23 @@ class ExcelManager:
             ws.cell(row=row_idx, column=7, value=s.gap_analysis)
 
         for col in range(1, 8):
+            ws.column_dimensions[chr(64 + col)].width = 22
+
+    def _write_tools(self, ws: Any, context: PipelineContext) -> None:
+        """Write the Tool Suggestions tab."""
+        headers = ["Company", "Tool Name", "Description", "Why Impressive", "Revenue Impact"]
+        self._write_header(ws, headers)
+
+        for row_idx, t in enumerate(context.tools, 2):
+            ws.cell(row=row_idx, column=1, value=t.company_name)
+            ws.cell(row=row_idx, column=2, value=t.tool_name)
+            ws.cell(row=row_idx, column=3, value=t.description)
+            ws.cell(row=row_idx, column=4, value=t.why_impressive)
+            ws.cell(row=row_idx, column=5, value=t.estimated_revenue_impact)
+
+        ws.column_dimensions["C"].width = 40
+        ws.column_dimensions["D"].width = 40
+        for col in [1, 2, 5]:
             ws.column_dimensions[chr(64 + col)].width = 22
 
     def _write_contacts(self, ws: Any, context: PipelineContext) -> None:

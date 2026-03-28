@@ -1,1 +1,1 @@
-"""Core infrastructure for JobHuntingAgents."""
+"""Core infrastructure for CastNet."""
