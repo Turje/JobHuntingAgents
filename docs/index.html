@@ -53,6 +53,18 @@
             border-bottom: 1px solid var(--border);
         }
         .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-center { display: flex; align-items: center; }
+        .hiw-box {
+            display: inline-block; padding: 6px 18px;
+            background: var(--surface); border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem; font-weight: 700; color: var(--text);
+            text-decoration: none; transition: border-color 0.2s, background 0.2s;
+        }
+        .hiw-box:hover {
+            border-color: var(--accent); background: var(--accent-glow);
+            color: var(--accent); text-decoration: none;
+        }
         .logo {
             font-size: 1.3rem; font-weight: 800;
             background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
@@ -139,8 +151,6 @@
         }
         .mode-badge-sm.ds_ml { background: var(--purple-glow); color: var(--purple); }
         .mode-badge-sm.general { background: var(--teal-glow); color: var(--teal); }
-        .hiw-link { font-size: 0.75rem; color: var(--text-dim); margin-left: 8px; }
-        .hiw-link:hover { color: var(--accent); }
 
         /* ---- LAYOUT ---- */
         .main { display: flex; height: calc(100vh - 140px); }
@@ -432,8 +442,10 @@
         <div class="header-left">
             <span class="logo">CastNet</span>
         </div>
+        <div class="header-center">
+            <a href="/how-it-works" class="hiw-box">How it works</a>
+        </div>
         <div class="connect-bar">
-            <a href="/how-it-works" class="hiw-link">How It Works</a>
             <span class="mode-badge hidden" id="modeBadge">Gemini</span>
             <div class="status-dot" id="statusDot"></div>
             <input type="text" id="backendUrl" placeholder="http://localhost:8000" />
