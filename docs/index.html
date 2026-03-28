@@ -141,7 +141,8 @@
         .session-item:hover { background: var(--surface-hover); }
         .session-item.active { background: var(--bg); border-left: 3px solid var(--accent); }
         .session-query { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-        .session-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.7rem; color: var(--text-dim); }
+        .session-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.7rem; color: var(--text-dim); gap: 4px; }
+        .session-timer { color: var(--cyan); font-weight: 600; font-variant-numeric: tabular-nums; }
         .session-del {
             opacity: 0; background: none; border: none; color: var(--red);
             font-size: 0.85rem; padding: 0 4px; cursor: pointer;
@@ -479,6 +480,8 @@ const S = {
     activeTab: {},      // companyName -> tab key
     data: { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] },
     uploadedResume: null,
+    searchStartTime: null,  // timestamp when current search started
+    timerInterval: null,    // interval ID for live timer
 };
 
 // =========================================================================
@@ -524,9 +527,12 @@ function wsConnect(rid) {
                 if (m.event === s.key + '_complete') { S.steps[s.key] = 'done'; loadData(S.runId); return; }
             }
             if (m.event === 'pipeline_complete' || m.event === 'complete') {
-                toast('Pipeline completed!', 'success'); loadData(S.runId); loadSessions();
+                stopTimer();
+                const elapsed = S.searchStartTime ? fmtElapsed(Date.now() - S.searchStartTime) : '';
+                toast(elapsed ? `Pipeline completed in ${elapsed}!` : 'Pipeline completed!', 'success');
+                loadData(S.runId); loadSessions();
             }
-            if (m.event === 'error') { toast('Error: ' + (m.data?.message || ''), 'error'); loadSessions(); }
+            if (m.event === 'error') { stopTimer(); toast('Error: ' + (m.data?.message || ''), 'error'); loadSessions(); }
         } catch {}
     };
     ws.onclose = () => { S.ws = null; };
@@ -562,6 +568,22 @@ function alColor(v) {
     return 'var(--red)';
 }
 function fmtDomain(d) { return (d || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+function fmtElapsed(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+function getSessionElapsed(sess) {
+    if (!sess.created_at) return '';
+    if (sess.ended_at) {
+        return fmtElapsed(new Date(sess.ended_at) - new Date(sess.created_at));
+    }
+    if (sess.status === 'running' && S.searchStartTime && sess.run_id === S.runId) {
+        return fmtElapsed(Date.now() - S.searchStartTime);
+    }
+    return '';
+}
 function fmtFunding(f) { return (f || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
 
 // Construct a Google search URL for careers
@@ -603,9 +625,11 @@ function renderSidebar() {
     el.innerHTML = S.sessions.map(s => {
         const a = s.run_id === S.runId ? ' active' : '';
         const t = s.created_at ? new Date(s.created_at).toLocaleDateString() : '';
+        const elapsed = getSessionElapsed(s);
+        const timerHtml = elapsed ? `<span class="session-timer">${elapsed}</span>` : '';
         return `<div class="session-item${a}" onclick="onSession('${s.run_id}')">
             <div class="session-query">${esc(s.query)}</div>
-            <div class="session-meta"><span>${t}</span><span class="badge badge-${s.status}">${s.status}</span><button class="session-del" onclick="onDeleteSession(event,'${s.run_id}')" title="Delete">&#x2715;</button></div>
+            <div class="session-meta"><span>${t}</span>${timerHtml}<span class="badge badge-${s.status}">${s.status}</span><button class="session-del" onclick="onDeleteSession(event,'${s.run_id}')" title="Delete">&#x2715;</button></div>
         </div>`;
     }).join('');
 }
@@ -645,7 +669,10 @@ function renderStats() {
     const nCo = d.companies.length, nPr = d.profiles.length, nSk = d.skills.length;
     const nTs = d.tool_suggestions.length, nCt = d.contacts.length, nDr = d.drafts.length;
     if (!nCo) return '';
+    const sess = S.sessions.find(s => s.run_id === S.runId);
+    const elapsed = sess ? getSessionElapsed(sess) : '';
     let h = '<div class="stats-bar">';
+    if (elapsed) h += `<div class="stat"><span class="stat-num" id="elapsedTimer">${elapsed}</span><span class="stat-label">Elapsed</span></div>`;
     h += `<div class="stat"><span class="stat-num">${nCo}</span><span class="stat-label">Companies</span></div>`;
     if (nPr) h += `<div class="stat"><span class="stat-num">${nPr}</span><span class="stat-label">Profiled</span></div>`;
     if (nSk) h += `<div class="stat"><span class="stat-num">${nSk}</span><span class="stat-label">Analyzed</span></div>`;
@@ -880,10 +907,20 @@ async function onSearch() {
         const r = await json('/search', { method: 'POST', body: JSON.stringify({ query: q }) });
         S.runId = r.run_id; S.steps = {}; S.expanded = {}; S.activeTab = {};
         S.data = { companies: [], profiles: [], skills: [], contacts: [], resumes: [], drafts: [], tool_suggestions: [] };
+        S.searchStartTime = Date.now();
+        if (S.timerInterval) clearInterval(S.timerInterval);
+        S.timerInterval = setInterval(() => { renderSidebar(); updateElapsedTimer(); }, 1000);
         toast('Search started', 'info');
         wsConnect(r.run_id); render(); await loadSessions();
     } catch (e) { toast('Search failed: ' + e.message, 'error'); }
     finally { document.getElementById('searchBtn').disabled = false; }
+}
+function updateElapsedTimer() {
+    const el = document.getElementById('elapsedTimer');
+    if (el && S.searchStartTime) el.textContent = fmtElapsed(Date.now() - S.searchStartTime);
+}
+function stopTimer() {
+    if (S.timerInterval) { clearInterval(S.timerInterval); S.timerInterval = null; }
 }
 
 async function onSession(rid) {
