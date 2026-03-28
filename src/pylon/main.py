@@ -24,8 +24,9 @@ from pylon.config import CORS_ORIGINS, DSPY_ENABLED, HOST, LLM_PROVIDER, PORT
 from pylon.store import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-_DASHBOARD_HTML = _PROJECT_ROOT / "docs" / "index.html"
+_DASHBOARD_HTML = _PROJECT_ROOT / "docs" / "app.html"
 _HOW_IT_WORKS_HTML = _PROJECT_ROOT / "docs" / "how-it-works.html"
+_LANDING_HTML = _PROJECT_ROOT / "docs" / "index.html"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s | %(levelname)s | %(message)s")
 _logger = logging.getLogger("pylon.main")
@@ -458,8 +459,13 @@ def _schedule_broadcast(run_id: str, event: str, data: Any) -> None:
 
 
 @app.get("/", include_in_schema=False)
+async def landing():
+    if _LANDING_HTML.exists():
+        return FileResponse(_LANDING_HTML, media_type="text/html")
+    return FileResponse(_DASHBOARD_HTML, media_type="text/html")
+
+@app.get("/app", include_in_schema=False)
 async def dashboard():
-    """Serve the operational dashboard."""
     return FileResponse(_DASHBOARD_HTML, media_type="text/html")
 
 
