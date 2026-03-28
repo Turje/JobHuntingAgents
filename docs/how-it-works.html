@@ -244,11 +244,29 @@
             </div>
         </div>
 
+        <!-- DSPY -->
+        <h2>DSPy Optimization Layer</h2>
+        <p>CastNet optionally supports <strong>DSPy</strong> — a framework for programmatically optimizing LLM prompts. When enabled, every agent in the pipeline can run through DSPy modules instead of direct LLM calls.</p>
+
+        <div class="card">
+            <h3>How It Works</h3>
+            <p>Each agent has a dual execution path: a direct LLM call (Gemini or Claude) and a DSPy module. When <code>DSPY_ENABLED=true</code>, agents use typed DSPy signatures with structured input/output fields, enabling automatic prompt optimization via DSPy's teleprompters.</p>
+        </div>
+        <div class="card">
+            <h3>What Gets Optimized</h3>
+            <p>All 7 pipeline agents (Discovery through Outreach) plus the Actor-Critic workflow's Planner and Critic have DSPy modules. DSPy can optimize the prompts based on scored metrics — for example, Discovery is scored on how many valid companies it returns, Outreach is scored on personalization quality and absence of spam patterns.</p>
+        </div>
+        <div class="card">
+            <h3>Actor-Critic + DSPy</h3>
+            <p>The Actor-Critic workflow uses DSPy modules for both the Search Planner (generates search strategy) and the Search Critic (reviews and approves/rejects the plan). This creates an iterative refinement loop that DSPy can optimize end-to-end, improving plan quality over successive runs.</p>
+        </div>
+
         <!-- TECHNOLOGY -->
         <h2>Technology</h2>
         <p>CastNet is built with a modern async Python stack and real-time frontend.</p>
         <div class="tech-list">
             <span class="tech-tag">Gemini / Claude LLMs</span>
+            <span class="tech-tag">DSPy</span>
             <span class="tech-tag">FastAPI</span>
             <span class="tech-tag">WebSocket</span>
             <span class="tech-tag">SQLite + WAL</span>
