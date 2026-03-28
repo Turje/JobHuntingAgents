@@ -464,14 +464,24 @@ async def landing():
         return FileResponse(_LANDING_HTML, media_type="text/html")
     return FileResponse(_DASHBOARD_HTML, media_type="text/html")
 
+@app.get("/index.html", include_in_schema=False)
+async def landing_html():
+    return FileResponse(_LANDING_HTML, media_type="text/html")
+
 @app.get("/app", include_in_schema=False)
 async def dashboard():
     return FileResponse(_DASHBOARD_HTML, media_type="text/html")
 
+@app.get("/app.html", include_in_schema=False)
+async def dashboard_html():
+    return FileResponse(_DASHBOARD_HTML, media_type="text/html")
 
 @app.get("/how-it-works", include_in_schema=False)
 async def how_it_works():
-    """Serve the How It Works page."""
+    return FileResponse(_HOW_IT_WORKS_HTML, media_type="text/html")
+
+@app.get("/how-it-works.html", include_in_schema=False)
+async def how_it_works_html():
     return FileResponse(_HOW_IT_WORKS_HTML, media_type="text/html")
 
 
