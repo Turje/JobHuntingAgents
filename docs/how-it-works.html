@@ -32,14 +32,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.7;
-            min-height: 100vh;
+            background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh;
         }
         a { color: var(--accent); text-decoration: none; }
         a:hover { text-decoration: underline; }
-
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 24px;
@@ -50,138 +46,156 @@
         .logo {
             font-size: 1.3rem; font-weight: 800;
             background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
         .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
-
         h1 {
             font-size: 2rem; font-weight: 800; margin-bottom: 8px;
             background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .subtitle { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 40px; }
-
-        h2 {
-            font-size: 1.25rem; font-weight: 700; margin: 36px 0 16px;
-            color: var(--text);
-        }
+        h2 { font-size: 1.25rem; font-weight: 700; margin: 36px 0 16px; color: var(--text); }
         p { color: var(--text-muted); margin-bottom: 14px; }
         code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: var(--accent); }
 
-        /* ---- INTERACTIVE PIPELINE ---- */
+        /* ---- PIPELINE ---- */
         .pipeline {
             display: flex; align-items: center; gap: 0;
             padding: 20px; background: var(--surface);
-            border: 1px solid var(--border); border-radius: var(--radius);
+            border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0;
             margin: 24px 0 0; overflow-x: auto; justify-content: center;
         }
         .pipe-step {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            min-width: 80px; text-align: center; cursor: pointer;
-            transition: transform 0.15s;
+            min-width: 80px; text-align: center; cursor: pointer; transition: transform 0.15s;
         }
         .pipe-step:hover { transform: scale(1.08); }
-        .pipe-step.active .pipe-circle {
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            box-shadow: 0 0 12px var(--accent-glow);
-        }
-        .pipe-step.active .pipe-label { color: var(--accent); }
         .pipe-circle {
             width: 44px; height: 44px; border-radius: 50%;
             border: 2px solid var(--border-light); display: flex;
             align-items: center; justify-content: center;
-            font-size: 0.8rem; font-weight: 700; color: var(--text-dim);
-            transition: all 0.2s;
+            font-size: 0.8rem; font-weight: 700; color: var(--text-dim); transition: all 0.3s;
         }
-        .pipe-circle:hover { border-color: var(--accent); color: var(--accent); }
-        .pipe-label { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; transition: color 0.2s; }
-        .pipe-arrow { width: 24px; height: 2px; background: var(--border-light); flex-shrink: 0; }
-        .pipe-hint {
-            text-align: center; color: var(--text-dim); font-size: 0.78rem;
-            padding: 12px 0 4px; margin-bottom: 20px;
+        .pipe-label { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; transition: color 0.3s; }
+        .pipe-arrow { width: 24px; height: 2px; background: var(--border-light); flex-shrink: 0; transition: background 0.3s; }
+
+        /* States */
+        .pipe-step.done .pipe-circle { background: var(--green); color: #fff; border-color: var(--green); }
+        .pipe-step.done .pipe-label { color: var(--green); }
+        .pipe-step.active .pipe-circle {
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 0 16px var(--accent-glow); animation: pulse 1.5s infinite;
+        }
+        .pipe-step.active .pipe-label { color: var(--accent); font-weight: 700; }
+        .pipe-arrow.done { background: var(--green); }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+            50% { box-shadow: 0 0 20px rgba(77,166,255,0.35); }
         }
 
-        /* ---- VIDEO BOX ---- */
-        .step-detail {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: var(--radius); margin-top: 0;
-            overflow: hidden; animation: fadeIn 0.25s ease;
-            border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+        /* ---- DEMO BOX ---- */
+        .demo-box {
+            background: var(--card-bg); border: 1px solid var(--border); border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            overflow: hidden; min-height: 260px;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        .step-video {
-            width: 100%; aspect-ratio: 16/9;
-            background: linear-gradient(135deg, #0d1117 0%, #131920 100%);
-            display: flex; align-items: center; justify-content: center;
+        .demo-box.hidden { display: none; }
+        .demo-progress {
+            height: 3px; background: var(--border);
+        }
+        .demo-progress-bar {
+            height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--teal));
+            transition: width 0.1s linear;
+        }
+        .demo-content {
+            display: flex; min-height: 240px;
+        }
+        .demo-visual {
+            flex: 1; padding: 28px 32px;
+            display: flex; flex-direction: column; justify-content: center;
+            border-right: 1px solid var(--border);
             position: relative; overflow: hidden;
         }
-        .step-video .play-icon {
-            width: 64px; height: 64px; border-radius: 50%;
-            background: rgba(77,166,255,0.15); border: 2px solid var(--accent);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-size: 1.5rem;
-            transition: transform 0.2s, background 0.2s;
+        .demo-info {
+            width: 280px; padding: 28px 24px;
+            display: flex; flex-direction: column; justify-content: center;
         }
-        .step-video .play-icon:hover { transform: scale(1.1); background: rgba(77,166,255,0.25); }
-        .step-video .coming-soon {
-            position: absolute; bottom: 12px; right: 16px;
-            font-size: 0.7rem; color: var(--text-dim); font-weight: 600;
-            letter-spacing: 0.5px; text-transform: uppercase;
+        .demo-info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .demo-info p { font-size: 0.88rem; margin-bottom: 16px; color: var(--text-muted); }
+        .demo-info .step-counter { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .demo-controls {
+            display: flex; gap: 8px; margin-top: 14px;
         }
-        .step-info {
-            padding: 20px 24px;
-            border-top: 1px solid var(--border);
+        .demo-btn {
+            padding: 6px 16px; border-radius: var(--radius-sm); font-size: 0.78rem;
+            font-weight: 600; border: 1px solid var(--border); background: var(--surface);
+            color: var(--text-muted); cursor: pointer; transition: all 0.15s;
         }
-        .step-info h3 {
-            font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--text);
-        }
-        .step-info p { font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted); }
+        .demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .demo-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+        .demo-btn.primary:hover { opacity: 0.85; }
 
-        /* ---- CARDS ---- */
-        .card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px;
+        /* ---- ANIMATED ITEMS ---- */
+        .anim-item {
+            padding: 8px 14px; margin-bottom: 6px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 0.82rem;
+            color: var(--text-muted); opacity: 0; transform: translateX(-16px);
+            animation: slideIn 0.4s forwards;
+            display: flex; align-items: center; gap: 10px;
         }
-        .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-        .card p { font-size: 0.88rem; margin-bottom: 0; }
+        .anim-item .dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .anim-item .tag {
+            font-size: 0.68rem; padding: 2px 8px; border-radius: 10px;
+            font-weight: 600; margin-left: auto; flex-shrink: 0;
+        }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .anim-bar {
+            height: 6px; border-radius: 3px; background: var(--border);
+            margin-bottom: 10px; overflow: hidden;
+        }
+        .anim-bar-fill {
+            height: 100%; border-radius: 3px; width: 0%;
+            animation: fillBar 2.5s ease forwards;
+        }
+        @keyframes fillBar { to { width: var(--fill); } }
+        .anim-bar-label {
+            display: flex; justify-content: space-between; font-size: 0.75rem;
+            color: var(--text-dim); margin-bottom: 4px;
+        }
 
-        .modes {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-            margin: 16px 0 32px;
+        .pipe-hint {
+            text-align: center; color: var(--text-dim); font-size: 0.78rem;
+            padding: 16px 0 4px; margin-bottom: 20px;
         }
-        .mode-card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 20px;
-        }
+
+        /* ---- REST ---- */
+        .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 32px; }
+        .mode-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
         .mode-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
         .mode-card.general h3 { color: var(--teal); }
         .mode-card.dsml h3 { color: var(--purple); }
         .mode-card ul { list-style: none; padding: 0; }
-        .mode-card li {
-            color: var(--text-muted); font-size: 0.85rem; padding: 3px 0;
-            padding-left: 16px; position: relative;
-        }
-        .mode-card li::before {
-            content: ''; position: absolute; left: 0; top: 10px;
-            width: 6px; height: 6px; border-radius: 50%;
-        }
+        .mode-card li { color: var(--text-muted); font-size: 0.85rem; padding: 3px 0; padding-left: 16px; position: relative; }
+        .mode-card li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; }
         .mode-card.general li::before { background: var(--teal); }
         .mode-card.dsml li::before { background: var(--purple); }
-
         .tech-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-        .tech-tag {
-            font-size: 0.75rem; padding: 4px 12px; border-radius: 16px;
-            font-weight: 600; background: var(--surface); border: 1px solid var(--border);
-            color: var(--text-muted);
-        }
+        .tech-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 16px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); }
 
         @media (max-width: 640px) {
             .modes { grid-template-columns: 1fr; }
             .pipeline { flex-wrap: wrap; gap: 8px; }
             .pipe-arrow { width: 12px; }
+            .demo-content { flex-direction: column; }
+            .demo-info { width: 100%; border-top: 1px solid var(--border); }
+            .demo-visual { border-right: none; }
         }
     </style>
 </head>
@@ -195,33 +209,21 @@
 
     <div class="page">
         <h1>How it works</h1>
-        <p class="subtitle">A multi-agent platform that automates every step of your job search. Click any step below to see how it works.</p>
+        <p class="subtitle">A multi-agent platform that automates every step of your job search. Press play to watch the pipeline in action.</p>
 
-        <!-- INTERACTIVE PIPELINE -->
-        <div class="pipeline" id="pipeline">
-            <div class="pipe-step" onclick="showStep(0)" data-step="0"><div class="pipe-circle">1</div><div class="pipe-label">Discovery</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(1)" data-step="1"><div class="pipe-circle">2</div><div class="pipe-label">Research</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(2)" data-step="2"><div class="pipe-circle">3</div><div class="pipe-label">Skills</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(3)" data-step="3"><div class="pipe-circle">4</div><div class="pipe-label">Tools</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(4)" data-step="4"><div class="pipe-circle">5</div><div class="pipe-label">Contacts</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(5)" data-step="5"><div class="pipe-circle">6</div><div class="pipe-label">Resume</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(6)" data-step="6"><div class="pipe-circle">7</div><div class="pipe-label">Outreach</div></div>
-            <div class="pipe-arrow"></div>
-            <div class="pipe-step" onclick="showStep(7)" data-step="7"><div class="pipe-circle">8</div><div class="pipe-label">Export</div></div>
+        <div class="pipeline" id="pipeline"></div>
+        <div id="demoBox" class="demo-box hidden"></div>
+        <div class="pipe-hint" id="pipeHint">Click any step or press Play to start the walkthrough</div>
+
+        <div style="display:flex;justify-content:center;gap:10px;margin:16px 0 32px;">
+            <button class="demo-btn primary" id="playBtn" onclick="startWalkthrough()">Play</button>
+            <button class="demo-btn" id="pauseBtn" onclick="pauseWalkthrough()" style="display:none;">Pause</button>
+            <button class="demo-btn" id="resetBtn" onclick="resetWalkthrough()" style="display:none;">Reset</button>
         </div>
-        <div id="stepDetail"></div>
-        <div class="pipe-hint" id="pipeHint">Click a step to learn more</div>
 
         <!-- SEARCH MODES -->
         <h2>Search Modes</h2>
         <p>Choose a search mode before running your query to focus the agents on the right type of opportunities.</p>
-
         <div class="modes">
             <div class="mode-card general">
                 <h3>General Mode</h3>
@@ -243,11 +245,9 @@
             </div>
         </div>
 
-        <!-- DSPY -->
         <h2>DSPy Optimization Layer</h2>
         <p>When <code>DSPY_ENABLED=true</code>, every agent runs through DSPy modules instead of direct LLM calls. DSPy optimizes prompts automatically using scored metrics per agent. The Actor-Critic workflow (Planner + Critic) also has DSPy modules for iterative plan refinement.</p>
 
-        <!-- TECHNOLOGY -->
         <h2>Technology</h2>
         <p>CastNet is built with a modern async Python stack and real-time frontend.</p>
         <div class="tech-list">
@@ -265,51 +265,238 @@
 
 <script>
 const STEPS = [
-    { title: 'Discovery Agent', desc: 'Takes your natural-language query, searches the web, and uses AI to find companies that match — across any industry.' },
-    { title: 'Research Agent', desc: 'Deep-dives into each company: engineering culture, R&D approach, hiring signals, ML use cases, funding stage, and more.' },
-    { title: 'Skills Agent', desc: 'Analyzes each company\'s tech stack versus your skills. Shows alignment scores, gaps, and what to learn.' },
-    { title: 'Tools Agent', desc: 'Suggests buildable tools, demos, or products you can create to impress hiring managers at each company.' },
-    { title: 'Contact Agent', desc: 'Identifies decision-makers at each company: hiring managers, team leads, and department heads for your target role.' },
-    { title: 'Resume Agent', desc: 'Tailors your resume per company, emphasizing the most relevant skills, projects, and experience.' },
-    { title: 'Outreach Agent', desc: 'Drafts personalized cold emails for each contact, using company research and your tailored resume summary.' },
-    { title: 'Export', desc: 'Compiles everything into a downloadable Excel spreadsheet for offline review and tracking.' },
+    {
+        title: 'Discovery Agent',
+        desc: 'Searches the web and uses AI to find companies matching your query across any industry.',
+        duration: 4000,
+        visual: () => {
+            const companies = [
+                { name: 'Stripe', tag: 'Fintech', color: 'var(--accent)' },
+                { name: 'FedEx', tag: 'Logistics', color: 'var(--green)' },
+                { name: 'Spotify', tag: 'Media', color: 'var(--purple)' },
+                { name: 'Mayo Clinic', tag: 'Healthcare', color: 'var(--teal)' },
+                { name: 'Nike', tag: 'Retail', color: 'var(--orange)' },
+            ];
+            return companies.map((c, i) => `
+                <div class="anim-item" style="animation-delay:${i * 0.4}s">
+                    <span class="dot" style="background:${c.color}"></span>
+                    <span>${c.name}</span>
+                    <span class="tag" style="background:${c.color}22;color:${c.color}">${c.tag}</span>
+                </div>
+            `).join('');
+        }
+    },
+    {
+        title: 'Research Agent',
+        desc: 'Deep-dives into each company: culture, R&D, hiring signals, tech use cases, and funding.',
+        duration: 4000,
+        visual: () => `
+            <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:12px;">Stripe — Research Profile</div>
+            <div class="anim-item" style="animation-delay:0.2s"><span class="dot" style="background:var(--accent)"></span>Engineering blog: active, 40+ posts/year</div>
+            <div class="anim-item" style="animation-delay:0.6s"><span class="dot" style="background:var(--green)"></span>ML use cases: fraud detection, revenue optimization</div>
+            <div class="anim-item" style="animation-delay:1.0s"><span class="dot" style="background:var(--purple)"></span>Funding: Series I ($6.5B) — strong hiring signals</div>
+            <div class="anim-item" style="animation-delay:1.4s"><span class="dot" style="background:var(--teal)"></span>Culture: high autonomy, shipping-focused</div>
+        `
+    },
+    {
+        title: 'Skills Agent',
+        desc: 'Analyzes tech stacks and compares them to your skills. Shows alignment scores and gaps.',
+        duration: 4000,
+        visual: () => `
+            <div class="anim-bar-label"><span>Python</span><span style="color:var(--green)">95%</span></div>
+            <div class="anim-bar"><div class="anim-bar-fill" style="--fill:95%;background:var(--green)"></div></div>
+            <div class="anim-bar-label"><span>PyTorch</span><span style="color:var(--accent)">82%</span></div>
+            <div class="anim-bar"><div class="anim-bar-fill" style="--fill:82%;background:var(--accent);animation-delay:0.3s"></div></div>
+            <div class="anim-bar-label"><span>Kubernetes</span><span style="color:var(--orange)">45%</span></div>
+            <div class="anim-bar"><div class="anim-bar-fill" style="--fill:45%;background:var(--orange);animation-delay:0.6s"></div></div>
+            <div class="anim-bar-label"><span>Spark</span><span style="color:var(--purple)">68%</span></div>
+            <div class="anim-bar"><div class="anim-bar-fill" style="--fill:68%;background:var(--purple);animation-delay:0.9s"></div></div>
+            <div class="anim-bar-label"><span>Terraform</span><span style="color:var(--orange)">30%</span></div>
+            <div class="anim-bar"><div class="anim-bar-fill" style="--fill:30%;background:var(--orange);animation-delay:1.2s"></div></div>
+        `
+    },
+    {
+        title: 'Tools Agent',
+        desc: 'Suggests buildable projects to impress hiring managers at each target company.',
+        duration: 4000,
+        visual: () => `
+            <div class="anim-item" style="animation-delay:0.2s"><span class="dot" style="background:var(--accent)"></span>Real-time fraud scoring API<span class="tag" style="background:var(--green-glow);color:var(--green)">High impact</span></div>
+            <div class="anim-item" style="animation-delay:0.7s"><span class="dot" style="background:var(--purple)"></span>ML feature store dashboard<span class="tag" style="background:var(--accent-glow);color:var(--accent)">Portfolio</span></div>
+            <div class="anim-item" style="animation-delay:1.2s"><span class="dot" style="background:var(--teal)"></span>A/B testing analytics pipeline<span class="tag" style="background:var(--purple-glow);color:var(--purple)">Demo-ready</span></div>
+        `
+    },
+    {
+        title: 'Contact Agent',
+        desc: 'Finds hiring managers, team leads, and decision-makers at each company.',
+        duration: 4000,
+        visual: () => `
+            <div class="anim-item" style="animation-delay:0.3s"><span class="dot" style="background:var(--accent)"></span>Sarah Chen — <em style="color:var(--text-dim)">Head of ML, Stripe</em></div>
+            <div class="anim-item" style="animation-delay:0.8s"><span class="dot" style="background:var(--green)"></span>James Park — <em style="color:var(--text-dim)">VP Data Science, FedEx</em></div>
+            <div class="anim-item" style="animation-delay:1.3s"><span class="dot" style="background:var(--purple)"></span>Maria Lopez — <em style="color:var(--text-dim)">Director of AI, Spotify</em></div>
+        `
+    },
+    {
+        title: 'Resume Agent',
+        desc: 'Tailors your resume per company, emphasizing relevant skills and projects.',
+        duration: 4000,
+        visual: () => `
+            <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:10px;">Tailored for Stripe</div>
+            <div class="anim-item" style="animation-delay:0.2s"><span class="dot" style="background:var(--green)"></span>Summary rewritten for payments + ML focus</div>
+            <div class="anim-item" style="animation-delay:0.7s"><span class="dot" style="background:var(--accent)"></span>Highlighted: fraud detection pipeline project</div>
+            <div class="anim-item" style="animation-delay:1.2s"><span class="dot" style="background:var(--purple)"></span>Skills emphasis: Python, PyTorch, real-time systems</div>
+        `
+    },
+    {
+        title: 'Outreach Agent',
+        desc: 'Drafts personalized cold emails using company research and your tailored resume.',
+        duration: 4000,
+        visual: () => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;opacity:0;animation:slideIn 0.5s 0.3s forwards;">
+                <div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:8px;">TO: sarah.chen@stripe.com</div>
+                <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-bottom:8px;">Re: ML fraud detection — built something you might find interesting</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.6;">Hi Sarah, I saw Stripe's recent work on real-time fraud scoring and built a prototype feature store that reduces model latency by 40%. Given your team's focus on...</div>
+                <div style="font-size:0.7rem;color:var(--text-dim);margin-top:10px;font-style:italic;">Personalized with 4 company-specific references</div>
+            </div>
+        `
+    },
+    {
+        title: 'Export',
+        desc: 'Compiles all results into a downloadable Excel spreadsheet.',
+        duration: 3000,
+        visual: () => `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0;">
+                <div style="font-size:3rem;opacity:0;animation:slideIn 0.5s 0.3s forwards;">&#128202;</div>
+                <div class="anim-item" style="animation-delay:0.6s;justify-content:center;"><span>5 companies &middot; 5 profiles &middot; 5 contacts &middot; 5 emails</span></div>
+                <div class="anim-item" style="animation-delay:1.0s;justify-content:center;background:var(--green-glow);border-color:var(--green);color:var(--green);font-weight:600;">castnet_results.xlsx ready to download</div>
+            </div>
+        `
+    },
 ];
 
+const STEP_LABELS = ['Discovery','Research','Skills','Tools','Contacts','Resume','Outreach','Export'];
+
 let activeStep = -1;
+let timer = null;
+let progressTimer = null;
+let playing = false;
+let progressStart = 0;
+
+// Build pipeline HTML
+function buildPipeline() {
+    const el = document.getElementById('pipeline');
+    el.innerHTML = STEP_LABELS.map((label, i) => `
+        <div class="pipe-step" data-step="${i}" onclick="jumpToStep(${i})">
+            <div class="pipe-circle">${i + 1}</div>
+            <div class="pipe-label">${label}</div>
+        </div>
+        ${i < STEP_LABELS.length - 1 ? '<div class="pipe-arrow" data-arrow="' + i + '"></div>' : ''}
+    `).join('');
+}
+
+function updatePipelineState(current) {
+    const steps = document.querySelectorAll('.pipe-step');
+    const arrows = document.querySelectorAll('.pipe-arrow');
+    steps.forEach((s, i) => {
+        s.classList.remove('active', 'done');
+        if (i < current) s.classList.add('done');
+        else if (i === current) s.classList.add('active');
+    });
+    arrows.forEach((a, i) => {
+        a.classList.toggle('done', i < current);
+    });
+}
 
 function showStep(i) {
-    const steps = document.querySelectorAll('.pipe-step');
-    const detail = document.getElementById('stepDetail');
-    const hint = document.getElementById('pipeHint');
-
-    if (activeStep === i) {
-        // Toggle off
-        steps[i].classList.remove('active');
-        detail.innerHTML = '';
-        hint.style.display = '';
-        activeStep = -1;
-        return;
-    }
-
-    steps.forEach(s => s.classList.remove('active'));
-    steps[i].classList.add('active');
-    hint.style.display = 'none';
     activeStep = i;
+    const box = document.getElementById('demoBox');
+    const hint = document.getElementById('pipeHint');
+    hint.style.display = 'none';
+    box.classList.remove('hidden');
+    updatePipelineState(i);
 
     const s = STEPS[i];
-    detail.innerHTML = `
-        <div class="step-detail">
-            <div class="step-video">
-                <div class="play-icon">&#9654;</div>
-                <div class="coming-soon">Video coming soon</div>
-            </div>
-            <div class="step-info">
+    box.innerHTML = `
+        <div class="demo-progress"><div class="demo-progress-bar" id="progressBar"></div></div>
+        <div class="demo-content">
+            <div class="demo-visual">${s.visual()}</div>
+            <div class="demo-info">
+                <div class="step-counter">Step ${i + 1} of ${STEPS.length}</div>
                 <h3>${s.title}</h3>
                 <p>${s.desc}</p>
             </div>
         </div>
     `;
+
+    // Animate progress bar
+    progressStart = Date.now();
+    if (progressTimer) cancelAnimationFrame(progressTimer);
+    function tick() {
+        const elapsed = Date.now() - progressStart;
+        const pct = Math.min(100, (elapsed / s.duration) * 100);
+        const bar = document.getElementById('progressBar');
+        if (bar) bar.style.width = pct + '%';
+        if (pct < 100 && playing) progressTimer = requestAnimationFrame(tick);
+    }
+    if (playing) tick();
 }
+
+function advanceStep() {
+    if (activeStep < STEPS.length - 1) {
+        showStep(activeStep + 1);
+        timer = setTimeout(advanceStep, STEPS[activeStep].duration);
+    } else {
+        // Finished — mark all done
+        updatePipelineState(STEPS.length);
+        playing = false;
+        document.getElementById('playBtn').style.display = '';
+        document.getElementById('playBtn').textContent = 'Replay';
+        document.getElementById('pauseBtn').style.display = 'none';
+        document.getElementById('resetBtn').style.display = '';
+    }
+}
+
+function startWalkthrough() {
+    playing = true;
+    document.getElementById('playBtn').style.display = 'none';
+    document.getElementById('pauseBtn').style.display = '';
+    document.getElementById('resetBtn').style.display = '';
+
+    const startFrom = activeStep < 0 ? 0 : (activeStep >= STEPS.length - 1 ? 0 : activeStep);
+    showStep(startFrom);
+    timer = setTimeout(advanceStep, STEPS[startFrom].duration);
+}
+
+function pauseWalkthrough() {
+    playing = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (progressTimer) { cancelAnimationFrame(progressTimer); progressTimer = null; }
+    document.getElementById('playBtn').style.display = '';
+    document.getElementById('playBtn').textContent = 'Resume';
+    document.getElementById('pauseBtn').style.display = 'none';
+}
+
+function resetWalkthrough() {
+    playing = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (progressTimer) { cancelAnimationFrame(progressTimer); progressTimer = null; }
+    activeStep = -1;
+    updatePipelineState(-1);
+    document.getElementById('demoBox').classList.add('hidden');
+    document.getElementById('demoBox').innerHTML = '';
+    document.getElementById('pipeHint').style.display = '';
+    document.getElementById('playBtn').style.display = '';
+    document.getElementById('playBtn').textContent = 'Play';
+    document.getElementById('pauseBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'none';
+}
+
+function jumpToStep(i) {
+    // If playing, pause first
+    if (playing) pauseWalkthrough();
+    showStep(i);
+}
+
+buildPipeline();
 </script>
 </body>
 </html>
