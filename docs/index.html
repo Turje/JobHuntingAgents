@@ -72,6 +72,7 @@
         }
         .mode-badge.dspy { background: rgba(188,140,255,0.2); color: var(--accent-purple); }
         .mode-badge.claude { background: rgba(88,166,255,0.15); color: var(--accent); }
+        .mode-badge.gemini { background: rgba(63,185,80,0.15); color: var(--accent-green); }
 
         /* ---- SEARCH ---- */
         .search-section {
@@ -340,7 +341,7 @@
             <span class="header-title">CastNet</span>
         </div>
         <div class="connect-bar">
-            <span class="mode-badge claude hidden" id="modeBadge">Claude</span>
+            <span class="mode-badge hidden" id="modeBadge">Gemini</span>
             <div class="status-dot" id="statusDot"></div>
             <input type="text" id="backendUrl" placeholder="http://localhost:8000" />
             <button onclick="onConnect()">Connect</button>
@@ -349,7 +350,7 @@
 
     <div style="border-bottom:1px solid var(--border)">
         <div class="search-section">
-            <input type="text" id="searchInput" placeholder="Find DS/ML companies in European football analytics..." onkeydown="if(event.key==='Enter')onSearch()" />
+            <input type="text" id="searchInput" placeholder="Find your next dream job..." onkeydown="if(event.key==='Enter')onSearch()" />
             <button id="searchBtn" onclick="onSearch()">Search</button>
         </div>
     </div>
@@ -465,11 +466,12 @@ function setDot(s) {
     if (s === 'connected') d.classList.add('connected');
     else if (s === 'connecting') d.classList.add('connecting');
 }
-function setModeBadge(dspyEnabled) {
+function setModeBadge(dspyEnabled, llmProvider) {
     const b = document.getElementById('modeBadge');
-    b.classList.remove('hidden', 'dspy', 'claude');
+    b.classList.remove('hidden', 'dspy', 'claude', 'gemini');
     if (dspyEnabled) { b.textContent = 'DSPy'; b.classList.add('dspy'); }
-    else { b.textContent = 'Claude'; b.classList.add('claude'); }
+    else if (llmProvider === 'gemini') { b.textContent = 'GEMINI'; b.classList.add('gemini'); }
+    else { b.textContent = 'CLAUDE'; b.classList.add('claude'); }
 }
 function alColor(v) {
     if (v >= 0.7) return 'var(--accent-green)';
@@ -725,7 +727,7 @@ async function onConnect() {
         const d = await json('/health');
         if (d.status === 'ok') {
             S.connected = true; setDot('connected');
-            setModeBadge(d.dspy_enabled);
+            setModeBadge(d.dspy_enabled, d.llm_provider);
             document.getElementById('overlay').classList.add('hidden');
             toast('Connected', 'success'); await loadSessions(); await loadUploadedResume();
         } else throw 0;
@@ -860,7 +862,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const d = await json('/health');
         if (d.status === 'ok') {
             S.connected = true; setDot('connected');
-            setModeBadge(d.dspy_enabled);
+            setModeBadge(d.dspy_enabled, d.llm_provider);
             document.getElementById('overlay').classList.add('hidden');
             await loadSessions(); await loadUploadedResume();
         } else throw 0;

@@ -34,7 +34,14 @@ _settings = _load_yaml("settings.yaml")
 _limits = _load_yaml("limits.yaml")
 
 
-# Anthropic
+# LLM Provider: "gemini" or "anthropic"
+LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", _settings.get("llm_provider", "gemini"))
+
+# Google Gemini
+GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", _settings.get("gemini_model", "gemini-2.0-flash"))
+
+# Anthropic (fallback / optional)
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", _settings.get("claude_model", "claude-sonnet-4-6"))
 
@@ -72,9 +79,13 @@ DSPY_OPTIMIZED_PATH: str = os.getenv("DSPY_OPTIMIZED_PATH", "")
 
 def validate_required_keys() -> None:
     """Call once at startup to verify required env vars."""
-    if not ANTHROPIC_API_KEY:
+    if LLM_PROVIDER == "gemini" and not GEMINI_API_KEY:
         raise EnvironmentError(
-            "ANTHROPIC_API_KEY is required but not set. Add it to your .env file."
+            "GEMINI_API_KEY is required when LLM_PROVIDER=gemini. Add it to your .env file."
+        )
+    if LLM_PROVIDER == "anthropic" and not ANTHROPIC_API_KEY:
+        raise EnvironmentError(
+            "ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic. Add it to your .env file."
         )
 
 

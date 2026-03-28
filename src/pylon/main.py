@@ -17,7 +17,7 @@ from fastapi import FastAPI, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from pylon.config import DSPY_ENABLED, HOST, PORT
+from pylon.config import DSPY_ENABLED, HOST, LLM_PROVIDER, PORT
 from pylon.store import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -68,7 +68,7 @@ def _get_router():
 @app.get("/health")
 async def health() -> JSONResponse:
     """Health check endpoint."""
-    return JSONResponse({"status": "ok", "dspy_enabled": DSPY_ENABLED})
+    return JSONResponse({"status": "ok", "dspy_enabled": DSPY_ENABLED, "llm_provider": LLM_PROVIDER})
 
 
 @app.get("/sessions")
