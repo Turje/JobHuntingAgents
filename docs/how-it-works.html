@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CastNet — How it works</title>
+    <meta name="description" content="CastNet — AI-powered multi-agent job hunting platform. 7 agents automate your entire job search.">
+    <meta property="og:title" content="CastNet">
+    <meta property="og:description" content="7 AI agents automate your entire job search pipeline">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://turje.github.io/JobHuntingAgents/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5/index.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1/dist/fonts/geist-sans/style.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1/dist/fonts/geist-mono/style.min.css">
@@ -269,14 +274,43 @@
             margin-top: 16px; min-height: 20px; transition: color 0.3s;
         }
 
-        @media (max-width: 640px) {
-            .modes { grid-template-columns: 1fr; }
-            .pipeline { flex-wrap: wrap; gap: 8px; }
-            .pipe-arrow { width: 12px; }
+        @media (max-width: 768px) {
+            .page { padding: 28px 16px 60px; }
+            h1 { font-size: 1.6rem; }
+            .subtitle { font-size: 0.95rem; }
             .demo-content { flex-direction: column; }
             .demo-info { width: 100%; border-top: 1px solid var(--border); }
-            .demo-visual { border-right: none; }
+            .demo-visual { border-right: none; padding: 20px 16px; }
+            .demo-info { padding: 20px 16px; }
+        }
+        @media (max-width: 640px) {
+            .modes { grid-template-columns: 1fr; }
+            .pipeline { flex-wrap: wrap; gap: 8px; justify-content: center; }
+            .pipe-arrow { width: 12px; }
             .dspy-iter-row { flex-direction: column; }
+            .header-nav { gap: 16px; }
+            .nav-link { font-size: 0.8rem; }
+            .pipe-step { min-width: 64px; }
+            .pipe-circle { width: 36px; height: 36px; font-size: 0.72rem; }
+            .pipe-label { font-size: 0.65rem; }
+            .tech-list { gap: 6px; }
+            .tech-tag { font-size: 0.7rem; padding: 3px 10px; }
+        }
+        @media (max-width: 480px) {
+            .page { padding: 20px 12px 48px; }
+            h1 { font-size: 1.4rem; }
+            h2 { font-size: 1.1rem; }
+            .subtitle { font-size: 0.88rem; }
+            .demo-visual { padding: 16px 12px; }
+            .demo-info { padding: 16px 12px; }
+            .demo-info h3 { font-size: 0.95rem; }
+            .demo-info p { font-size: 0.82rem; }
+            .dspy-demo { padding: 20px 14px 16px; }
+            .dspy-title { font-size: 0.82rem; }
+            .dspy-ex-text { font-size: 0.82rem; }
+            .dspy-col-text { font-size: 0.72rem; }
+            .anim-item { font-size: 0.78rem; padding: 6px 10px; }
+            .header-nav { gap: 12px; }
         }
     </style>
 </head>

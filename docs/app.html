@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CastNet</title>
+    <meta name="description" content="CastNet — AI-powered multi-agent job hunting platform. 7 agents automate your entire job search.">
+    <meta property="og:title" content="CastNet">
+    <meta property="og:description" content="7 AI agents automate your entire job search pipeline">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://turje.github.io/JobHuntingAgents/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5/index.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1/dist/fonts/geist-sans/style.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1/dist/fonts/geist-mono/style.min.css">
@@ -383,6 +388,31 @@
             .header { padding: 8px 12px; }
             .research-grid { grid-template-columns: 1fr; }
             .search-wrap { padding: 16px 12px; }
+            .content { padding: 16px 12px; }
+            .main { height: auto; min-height: calc(100vh - 140px); }
+            .stepper { padding: 10px 12px; }
+            .step-node { min-width: 56px; }
+            .step-label { font-size: 0.56rem; }
+            .cc-header { padding: 14px 14px; flex-direction: column; gap: 10px; }
+            .cc-right { flex-direction: row; align-items: center; }
+            .cc-tab-content { padding: 14px; }
+            .contact-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .stats-bar { gap: 6px; }
+            .stat { padding: 6px 10px; font-size: 0.78rem; }
+            .mode-toggle { width: 100%; }
+            .mode-pill { flex: 1; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            .header-nav { gap: 12px; }
+            .nav-link { font-size: 0.78rem; }
+            .search-box input { font-size: 0.9rem; padding: 0 12px; }
+            .search-box button { padding: 0 16px; font-size: 0.82rem; }
+            .cc-name { font-size: 1rem; }
+            .cc-meta { gap: 4px; }
+            .cc-links { flex-wrap: wrap; }
+            .outreach-body { max-height: 120px; }
+            .empty-state { padding: 60px 16px; }
+            .empty-state h3 { font-size: 1.2rem; }
         }
     </style>
 </head>
