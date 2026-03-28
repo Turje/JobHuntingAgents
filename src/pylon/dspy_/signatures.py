@@ -26,7 +26,7 @@ class DiscoverCompanies(dspy.Signature):
         desc="Optional web search results for grounding", default=""
     )
     max_companies: int = dspy.InputField(
-        desc="Maximum number of companies to return", default=15
+        desc="Maximum number of companies to return", default=30
     )
     companies_json: str = dspy.OutputField(
         desc="JSON array of CompanyCandidate objects with name, domain, relevance_reason, website, confidence"
@@ -152,7 +152,7 @@ class PlanSearch(dspy.Signature):
 
 class CritiqueSearch(dspy.Signature):
     """Review a search plan for completeness and quality. Check coverage of
-    user interests, appropriate industries, reasonable company count (10-15),
+    user interests, appropriate industries, reasonable company count (up to 30),
     and specific search terms. Return APPROVED or REQUEST_CHANGES with feedback."""
 
     task: str = dspy.InputField(desc="The original search task")

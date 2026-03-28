@@ -53,7 +53,7 @@ class DiscoveryModule(dspy.Module):
         query: str,
         domain_hint: str = "",
         web_context: str = "",
-        max_companies: int = 15,
+        max_companies: int = 30,
     ) -> dspy.Prediction:
         return self.predict(
             query=query,

@@ -44,7 +44,7 @@ RETRY_BASE_DELAY: float = float(os.getenv("RETRY_BASE_DELAY", _limits.get("retry
 
 # Pipeline
 MAX_COMPANIES_PER_SEARCH: int = int(
-    os.getenv("MAX_COMPANIES_PER_SEARCH", _settings.get("max_companies_per_search", 15))
+    os.getenv("MAX_COMPANIES_PER_SEARCH", _settings.get("max_companies_per_search", 30))
 )
 MAX_OUTREACH_PER_DAY: int = int(
     os.getenv("MAX_OUTREACH_PER_DAY", _settings.get("max_outreach_per_day", 10))

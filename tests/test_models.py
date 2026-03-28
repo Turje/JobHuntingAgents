@@ -232,7 +232,7 @@ class TestIntent:
 class TestSearchConfig:
     def test_defaults(self):
         sc = SearchConfig()
-        assert sc.max_companies == 15
+        assert sc.max_companies == 30
         assert sc.include_outreach is True
 
 

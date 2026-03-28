@@ -213,7 +213,7 @@ class Intent(BaseModel):
 
 class SearchConfig(BaseModel):
     """Configuration for a search pipeline run."""
-    max_companies: int = 15
+    max_companies: int = 30
     max_outreach_per_day: int = 10
     include_skills_analysis: bool = True
     include_contact_search: bool = True
