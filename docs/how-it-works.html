@@ -189,6 +189,75 @@
         .tech-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         .tech-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 16px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); }
 
+        /* ---- DSPY DEMO ---- */
+        .dspy-demo {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 28px 24px 20px;
+            margin: 20px 0 8px; overflow: hidden;
+        }
+        .dspy-title {
+            text-align: center; font-size: 0.9rem; font-weight: 700;
+            color: var(--text); margin-bottom: 24px;
+        }
+        .dspy-flow {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; position: relative; padding-bottom: 40px;
+        }
+        .dspy-node {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            min-width: 90px; text-align: center; padding: 12px 8px;
+            border-radius: var(--radius-sm); border: 2px solid var(--border);
+            background: var(--surface); transition: all 0.4s; position: relative;
+        }
+        .dspy-icon { font-size: 1.4rem; line-height: 1; }
+        .dspy-nlabel { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
+        .dspy-sub { font-size: 0.6rem; color: var(--text-dim); }
+        .dspy-edge {
+            width: 32px; height: 2px; background: var(--border);
+            flex-shrink: 0; transition: background 0.3s; position: relative;
+        }
+        .dspy-node.lit { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .dspy-node.lit .dspy-nlabel { color: var(--accent); }
+        .dspy-edge.lit { background: var(--accent); }
+        .dspy-edge.lit::after {
+            content: ''; position: absolute; right: -4px; top: -3px;
+            border: 4px solid transparent; border-left: 6px solid var(--accent);
+        }
+
+        .dspy-node.dspy-metric.scored { border-color: var(--green); box-shadow: 0 0 12px var(--green-glow); }
+        .dspy-node.dspy-metric.scored .dspy-nlabel { color: var(--green); }
+        .dspy-node.dspy-metric.low { border-color: var(--orange); box-shadow: 0 0 12px var(--orange-glow); }
+        .dspy-node.dspy-metric.low .dspy-nlabel { color: var(--orange); }
+
+        .dspy-feedback {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 8px;
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .dspy-feedback.visible { opacity: 1; }
+        .dspy-feedback-arrow {
+            width: 200px; height: 2px; background: var(--purple);
+            position: relative;
+        }
+        .dspy-feedback-arrow::before {
+            content: ''; position: absolute; left: -4px; top: -3px;
+            border: 4px solid transparent; border-right: 6px solid var(--purple);
+        }
+        .dspy-feedback-label {
+            font-size: 0.68rem; color: var(--purple); font-weight: 700;
+            white-space: nowrap;
+        }
+        .dspy-caption {
+            text-align: center; font-size: 0.78rem; color: var(--text-dim);
+            margin-top: 16px; min-height: 20px; transition: color 0.3s;
+        }
+
+        .dspy-score-badge {
+            position: absolute; top: -8px; right: -8px;
+            font-size: 0.6rem; font-weight: 800; padding: 2px 6px;
+            border-radius: 8px; color: #fff;
+        }
+
         @media (max-width: 640px) {
             .modes { grid-template-columns: 1fr; }
             .pipeline { flex-wrap: wrap; gap: 8px; }
@@ -196,6 +265,9 @@
             .demo-content { flex-direction: column; }
             .demo-info { width: 100%; border-top: 1px solid var(--border); }
             .demo-visual { border-right: none; }
+            .dspy-flow { flex-wrap: wrap; gap: 8px; }
+            .dspy-edge { width: 16px; }
+            .dspy-feedback-arrow { width: 100px; }
         }
     </style>
 </head>
@@ -246,7 +318,47 @@
         </div>
 
         <h2>DSPy Optimization Layer</h2>
-        <p>When <code>DSPY_ENABLED=true</code>, every agent runs through DSPy modules instead of direct LLM calls. DSPy optimizes prompts automatically using scored metrics per agent. The Actor-Critic workflow (Planner + Critic) also has DSPy modules for iterative plan refinement.</p>
+        <p>Every agent in the pipeline runs through <strong>DSPy modules</strong> — typed signatures with structured input/output fields that DSPy optimizes automatically. Each agent has scored metrics (e.g. Discovery is scored on valid companies found, Outreach on personalization quality), and DSPy tunes the prompts to maximize these scores over successive runs. The Actor-Critic workflow (Planner + Critic) also uses DSPy modules for iterative plan refinement.</p>
+
+        <!-- DSPy ANIMATION -->
+        <div class="dspy-demo" id="dspyDemo">
+            <div class="dspy-title">How DSPy optimizes each agent</div>
+            <div class="dspy-flow" id="dspyFlow">
+                <div class="dspy-node dspy-input" id="dn0">
+                    <div class="dspy-icon">&#9997;</div>
+                    <div class="dspy-nlabel">User Query</div>
+                </div>
+                <div class="dspy-edge" id="de0"></div>
+                <div class="dspy-node dspy-module" id="dn1">
+                    <div class="dspy-icon">&#9881;</div>
+                    <div class="dspy-nlabel">DSPy Module</div>
+                    <div class="dspy-sub">Typed Signature</div>
+                </div>
+                <div class="dspy-edge" id="de1"></div>
+                <div class="dspy-node dspy-llm" id="dn2">
+                    <div class="dspy-icon">&#129302;</div>
+                    <div class="dspy-nlabel">LLM Call</div>
+                    <div class="dspy-sub">Gemini / Claude</div>
+                </div>
+                <div class="dspy-edge" id="de2"></div>
+                <div class="dspy-node dspy-output" id="dn3">
+                    <div class="dspy-icon">&#128202;</div>
+                    <div class="dspy-nlabel">Structured Output</div>
+                </div>
+                <div class="dspy-edge" id="de3"></div>
+                <div class="dspy-node dspy-metric" id="dn4">
+                    <div class="dspy-icon">&#127919;</div>
+                    <div class="dspy-nlabel">Metric Score</div>
+                    <div class="dspy-sub">Quality check</div>
+                </div>
+                <div class="dspy-feedback" id="dspyFeedback">
+                    <div class="dspy-feedback-arrow"></div>
+                    <div class="dspy-feedback-label">Optimize prompts</div>
+                </div>
+            </div>
+            <div class="dspy-caption" id="dspyCaption">Press to see the optimization loop in action</div>
+            <button class="demo-btn primary" id="dspyPlayBtn" onclick="startDspyAnim()" style="margin:12px auto 0;display:block;">Play</button>
+        </div>
 
         <h2>Technology</h2>
         <p>CastNet is built with a modern async Python stack and real-time frontend.</p>
@@ -497,6 +609,119 @@ function jumpToStep(i) {
 }
 
 buildPipeline();
+
+// =========================================================================
+// DSPY ANIMATION
+// =========================================================================
+let dspyRunning = false;
+
+function resetDspyNodes() {
+    for (let i = 0; i <= 4; i++) document.getElementById('dn' + i).className = document.getElementById('dn' + i).className.replace(/ lit| scored| low/g, '');
+    for (let i = 0; i <= 3; i++) document.getElementById('de' + i).classList.remove('lit');
+    document.getElementById('dspyFeedback').classList.remove('visible');
+    const badges = document.querySelectorAll('.dspy-score-badge');
+    badges.forEach(b => b.remove());
+}
+
+function dspyCaption(text) {
+    document.getElementById('dspyCaption').textContent = text;
+}
+
+function lightNode(id, cls) {
+    document.getElementById(id).classList.add(cls || 'lit');
+}
+function lightEdge(id) {
+    document.getElementById(id).classList.add('lit');
+}
+
+function addScoreBadge(nodeId, score, color) {
+    const node = document.getElementById(nodeId);
+    const old = node.querySelector('.dspy-score-badge');
+    if (old) old.remove();
+    const badge = document.createElement('div');
+    badge.className = 'dspy-score-badge';
+    badge.style.background = color;
+    badge.textContent = score;
+    node.appendChild(badge);
+}
+
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runDspyCycle(iteration, total) {
+    if (!dspyRunning) return;
+    const isLow = iteration < total - 1;
+
+    resetDspyNodes();
+    dspyCaption(`Iteration ${iteration + 1} of ${total} — sending query to DSPy module...`);
+    lightNode('dn0');
+    await sleep(600);
+
+    if (!dspyRunning) return;
+    lightEdge('de0');
+    await sleep(400);
+    lightNode('dn1');
+    dspyCaption(`DSPy module builds typed prompt with structured fields...`);
+    await sleep(800);
+
+    if (!dspyRunning) return;
+    lightEdge('de1');
+    await sleep(400);
+    lightNode('dn2');
+    dspyCaption(`Calling LLM with optimized prompt...`);
+    await sleep(1000);
+
+    if (!dspyRunning) return;
+    lightEdge('de2');
+    await sleep(400);
+    lightNode('dn3');
+    dspyCaption(`Parsing structured output...`);
+    await sleep(600);
+
+    if (!dspyRunning) return;
+    lightEdge('de3');
+    await sleep(400);
+
+    if (isLow) {
+        lightNode('dn4', 'low');
+        const score = (60 + iteration * 12) + '%';
+        addScoreBadge('dn4', score, '#d97706');
+        dspyCaption(`Score: ${score} — below threshold. Feeding back to optimize prompts...`);
+        await sleep(1000);
+
+        if (!dspyRunning) return;
+        document.getElementById('dspyFeedback').classList.add('visible');
+        await sleep(1500);
+    } else {
+        lightNode('dn4', 'scored');
+        addScoreBadge('dn4', '92%', '#059669');
+        dspyCaption(`Score: 92% — above threshold! Optimized prompt locked in.`);
+    }
+}
+
+async function startDspyAnim() {
+    if (dspyRunning) return;
+    dspyRunning = true;
+    const btn = document.getElementById('dspyPlayBtn');
+    btn.textContent = 'Running...';
+    btn.style.opacity = '0.5';
+
+    const cycles = 3;
+    for (let i = 0; i < cycles; i++) {
+        await runDspyCycle(i, cycles);
+        if (!dspyRunning) break;
+        if (i < cycles - 1) await sleep(800);
+    }
+
+    if (dspyRunning) {
+        await sleep(2000);
+        dspyCaption('DSPy automatically optimizes prompts to maximize agent quality scores.');
+    }
+
+    dspyRunning = false;
+    btn.textContent = 'Replay';
+    btn.style.opacity = '1';
+    btn.onclick = () => { resetDspyNodes(); dspyCaption('Press to see the optimization loop in action'); startDspyAnim(); };
+}
 </script>
 </body>
 </html>
