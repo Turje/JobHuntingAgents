@@ -9,6 +9,7 @@ import asyncio
 import functools
 import json
 import logging
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from typing import Any
@@ -31,6 +32,7 @@ _logger = logging.getLogger("pylon.main")
 _store = SessionStore()
 _ws_connections: dict[str, list[WebSocket]] = {}
 _thread_pool = ThreadPoolExecutor(max_workers=4)
+_running_tasks: set[asyncio.Task] = set()
 
 
 @asynccontextmanager
@@ -144,11 +146,16 @@ async def start_search(payload: dict[str, Any]) -> JSONResponse:
             await _broadcast(run_id, "complete", contract.model_dump())
 
         except Exception as exc:
-            _logger.error("Pipeline failed for %s: %s", run_id, exc)
-            await _store.end_session(run_id, "failed")
-            await _broadcast(run_id, "error", {"message": str(exc)})
+            _logger.error("Pipeline failed for %s: %s\n%s", run_id, exc, traceback.format_exc())
+            try:
+                await _store.end_session(run_id, "failed")
+                await _broadcast(run_id, "error", {"message": str(exc)})
+            except Exception as inner:
+                _logger.error("Failed to record pipeline failure: %s", inner)
 
-    asyncio.create_task(_run_pipeline())
+    task = asyncio.create_task(_run_pipeline())
+    _running_tasks.add(task)
+    task.add_done_callback(_running_tasks.discard)
 
     return JSONResponse({"run_id": run_id, "status": "running"})
 
