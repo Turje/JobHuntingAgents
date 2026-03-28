@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CastNet — How It Works</title>
+    <title>CastNet — How it works</title>
     <style>
         :root {
             --bg: #0a0e14;
@@ -54,7 +54,7 @@
             background-clip: text;
         }
 
-        .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+        .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
 
         h1 {
             font-size: 2rem; font-weight: 800; margin-bottom: 8px;
@@ -66,39 +66,81 @@
 
         h2 {
             font-size: 1.25rem; font-weight: 700; margin: 36px 0 16px;
-            color: var(--text); display: flex; align-items: center; gap: 10px;
+            color: var(--text);
         }
-        h2 .num {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; border-radius: 50%;
-            background: var(--accent-glow); color: var(--accent);
-            font-size: 0.8rem; font-weight: 800; flex-shrink: 0;
-        }
-
         p { color: var(--text-muted); margin-bottom: 14px; }
+        code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: var(--accent); }
 
+        /* ---- INTERACTIVE PIPELINE ---- */
         .pipeline {
             display: flex; align-items: center; gap: 0;
             padding: 20px; background: var(--surface);
             border: 1px solid var(--border); border-radius: var(--radius);
-            margin: 24px 0 32px; overflow-x: auto;
+            margin: 24px 0 0; overflow-x: auto; justify-content: center;
         }
         .pipe-step {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            min-width: 80px; text-align: center;
+            min-width: 80px; text-align: center; cursor: pointer;
+            transition: transform 0.15s;
         }
+        .pipe-step:hover { transform: scale(1.08); }
+        .pipe-step.active .pipe-circle {
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .pipe-step.active .pipe-label { color: var(--accent); }
         .pipe-circle {
-            width: 40px; height: 40px; border-radius: 50%;
-            border: 2px solid var(--accent); display: flex;
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 2px solid var(--border-light); display: flex;
             align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: 700; color: var(--accent);
+            font-size: 0.8rem; font-weight: 700; color: var(--text-dim);
+            transition: all 0.2s;
         }
-        .pipe-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
-        .pipe-arrow {
-            width: 24px; height: 2px; background: var(--border-light);
-            flex-shrink: 0;
+        .pipe-circle:hover { border-color: var(--accent); color: var(--accent); }
+        .pipe-label { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; transition: color 0.2s; }
+        .pipe-arrow { width: 24px; height: 2px; background: var(--border-light); flex-shrink: 0; }
+        .pipe-hint {
+            text-align: center; color: var(--text-dim); font-size: 0.78rem;
+            padding: 12px 0 4px; margin-bottom: 20px;
         }
 
+        /* ---- VIDEO BOX ---- */
+        .step-detail {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-top: 0;
+            overflow: hidden; animation: fadeIn 0.25s ease;
+            border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .step-video {
+            width: 100%; aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #0d1117 0%, #131920 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .step-video .play-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(77,166,255,0.15); border: 2px solid var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 1.5rem;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .step-video .play-icon:hover { transform: scale(1.1); background: rgba(77,166,255,0.25); }
+        .step-video .coming-soon {
+            position: absolute; bottom: 12px; right: 16px;
+            font-size: 0.7rem; color: var(--text-dim); font-weight: 600;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .step-info {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+        }
+        .step-info h3 {
+            font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--text);
+        }
+        .step-info p { font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted); }
+
+        /* ---- CARDS ---- */
         .card {
             background: var(--card-bg); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px;
@@ -114,14 +156,10 @@
             background: var(--card-bg); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 20px;
         }
-        .mode-card h3 {
-            font-size: 1rem; font-weight: 700; margin-bottom: 8px;
-        }
+        .mode-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
         .mode-card.general h3 { color: var(--teal); }
         .mode-card.dsml h3 { color: var(--purple); }
-        .mode-card ul {
-            list-style: none; padding: 0;
-        }
+        .mode-card ul { list-style: none; padding: 0; }
         .mode-card li {
             color: var(--text-muted); font-size: 0.85rem; padding: 3px 0;
             padding-left: 16px; position: relative;
@@ -133,9 +171,7 @@
         .mode-card.general li::before { background: var(--teal); }
         .mode-card.dsml li::before { background: var(--purple); }
 
-        .tech-list {
-            display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
-        }
+        .tech-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         .tech-tag {
             font-size: 0.75rem; padding: 4px 12px; border-radius: 16px;
             font-weight: 600; background: var(--surface); border: 1px solid var(--border);
@@ -158,66 +194,29 @@
     </div>
 
     <div class="page">
-        <h1>How CastNet Works</h1>
-        <p class="subtitle">A multi-agent platform that automates every step of your job search — from discovering companies to drafting personalized outreach.</p>
+        <h1>How it works</h1>
+        <p class="subtitle">A multi-agent platform that automates every step of your job search. Click any step below to see how it works.</p>
 
-        <!-- PIPELINE DIAGRAM -->
-        <h2>The Pipeline</h2>
-        <p>Every search runs through 8 specialized AI agents in sequence. Each agent builds on the previous agent's output.</p>
-
-        <div class="pipeline">
-            <div class="pipe-step"><div class="pipe-circle">1</div><div class="pipe-label">Discovery</div></div>
+        <!-- INTERACTIVE PIPELINE -->
+        <div class="pipeline" id="pipeline">
+            <div class="pipe-step" onclick="showStep(0)" data-step="0"><div class="pipe-circle">1</div><div class="pipe-label">Discovery</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">2</div><div class="pipe-label">Research</div></div>
+            <div class="pipe-step" onclick="showStep(1)" data-step="1"><div class="pipe-circle">2</div><div class="pipe-label">Research</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">3</div><div class="pipe-label">Skills</div></div>
+            <div class="pipe-step" onclick="showStep(2)" data-step="2"><div class="pipe-circle">3</div><div class="pipe-label">Skills</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">4</div><div class="pipe-label">Tools</div></div>
+            <div class="pipe-step" onclick="showStep(3)" data-step="3"><div class="pipe-circle">4</div><div class="pipe-label">Tools</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">5</div><div class="pipe-label">Contacts</div></div>
+            <div class="pipe-step" onclick="showStep(4)" data-step="4"><div class="pipe-circle">5</div><div class="pipe-label">Contacts</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">6</div><div class="pipe-label">Resume</div></div>
+            <div class="pipe-step" onclick="showStep(5)" data-step="5"><div class="pipe-circle">6</div><div class="pipe-label">Resume</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">7</div><div class="pipe-label">Outreach</div></div>
+            <div class="pipe-step" onclick="showStep(6)" data-step="6"><div class="pipe-circle">7</div><div class="pipe-label">Outreach</div></div>
             <div class="pipe-arrow"></div>
-            <div class="pipe-step"><div class="pipe-circle">8</div><div class="pipe-label">Export</div></div>
+            <div class="pipe-step" onclick="showStep(7)" data-step="7"><div class="pipe-circle">8</div><div class="pipe-label">Export</div></div>
         </div>
-
-        <!-- EACH AGENT -->
-        <h2>The Agents</h2>
-
-        <div class="card">
-            <h3>1. Discovery Agent</h3>
-            <p>Takes your natural-language query and finds matching companies using web search and AI reasoning. Identifies companies across industries that match your interests.</p>
-        </div>
-        <div class="card">
-            <h3>2. Research Agent</h3>
-            <p>Deep-dives into each discovered company: engineering culture, R&amp;D approach, hiring signals, tech use cases, funding stage, and more.</p>
-        </div>
-        <div class="card">
-            <h3>3. Skills Agent</h3>
-            <p>Analyzes each company's tech stack and compares it to your skills. Identifies gaps, alignment scores, and what you'd need to learn.</p>
-        </div>
-        <div class="card">
-            <h3>4. Tools Agent</h3>
-            <p>Suggests buildable tools, demos, or products for each company — things you can create to impress hiring managers and demonstrate domain expertise.</p>
-        </div>
-        <div class="card">
-            <h3>5. Contact Agent</h3>
-            <p>Identifies key decision-makers at each company: hiring managers, team leads, and department heads relevant to the role you're targeting.</p>
-        </div>
-        <div class="card">
-            <h3>6. Resume Agent</h3>
-            <p>Tailors your resume for each company, emphasizing the most relevant skills, projects, and experience based on what the company values.</p>
-        </div>
-        <div class="card">
-            <h3>7. Outreach Agent</h3>
-            <p>Drafts personalized cold emails for each contact, incorporating company research, your tailored resume summary, and a clear call-to-action.</p>
-        </div>
-        <div class="card">
-            <h3>8. Export</h3>
-            <p>Compiles all results into a downloadable Excel spreadsheet for offline review and tracking.</p>
-        </div>
+        <div id="stepDetail"></div>
+        <div class="pipe-hint" id="pipeHint">Click a step to learn more</div>
 
         <!-- SEARCH MODES -->
         <h2>Search Modes</h2>
@@ -246,20 +245,7 @@
 
         <!-- DSPY -->
         <h2>DSPy Optimization Layer</h2>
-        <p>CastNet optionally supports <strong>DSPy</strong> — a framework for programmatically optimizing LLM prompts. When enabled, every agent in the pipeline can run through DSPy modules instead of direct LLM calls.</p>
-
-        <div class="card">
-            <h3>How It Works</h3>
-            <p>Each agent has a dual execution path: a direct LLM call (Gemini or Claude) and a DSPy module. When <code>DSPY_ENABLED=true</code>, agents use typed DSPy signatures with structured input/output fields, enabling automatic prompt optimization via DSPy's teleprompters.</p>
-        </div>
-        <div class="card">
-            <h3>What Gets Optimized</h3>
-            <p>All 7 pipeline agents (Discovery through Outreach) plus the Actor-Critic workflow's Planner and Critic have DSPy modules. DSPy can optimize the prompts based on scored metrics — for example, Discovery is scored on how many valid companies it returns, Outreach is scored on personalization quality and absence of spam patterns.</p>
-        </div>
-        <div class="card">
-            <h3>Actor-Critic + DSPy</h3>
-            <p>The Actor-Critic workflow uses DSPy modules for both the Search Planner (generates search strategy) and the Search Critic (reviews and approves/rejects the plan). This creates an iterative refinement loop that DSPy can optimize end-to-end, improving plan quality over successive runs.</p>
-        </div>
+        <p>When <code>DSPY_ENABLED=true</code>, every agent runs through DSPy modules instead of direct LLM calls. DSPy optimizes prompts automatically using scored metrics per agent. The Actor-Critic workflow (Planner + Critic) also has DSPy modules for iterative plan refinement.</p>
 
         <!-- TECHNOLOGY -->
         <h2>Technology</h2>
@@ -276,5 +262,54 @@
             <span class="tech-tag">Multi-Agent Orchestration</span>
         </div>
     </div>
+
+<script>
+const STEPS = [
+    { title: 'Discovery Agent', desc: 'Takes your natural-language query, searches the web, and uses AI to find companies that match — across any industry.' },
+    { title: 'Research Agent', desc: 'Deep-dives into each company: engineering culture, R&D approach, hiring signals, ML use cases, funding stage, and more.' },
+    { title: 'Skills Agent', desc: 'Analyzes each company\'s tech stack versus your skills. Shows alignment scores, gaps, and what to learn.' },
+    { title: 'Tools Agent', desc: 'Suggests buildable tools, demos, or products you can create to impress hiring managers at each company.' },
+    { title: 'Contact Agent', desc: 'Identifies decision-makers at each company: hiring managers, team leads, and department heads for your target role.' },
+    { title: 'Resume Agent', desc: 'Tailors your resume per company, emphasizing the most relevant skills, projects, and experience.' },
+    { title: 'Outreach Agent', desc: 'Drafts personalized cold emails for each contact, using company research and your tailored resume summary.' },
+    { title: 'Export', desc: 'Compiles everything into a downloadable Excel spreadsheet for offline review and tracking.' },
+];
+
+let activeStep = -1;
+
+function showStep(i) {
+    const steps = document.querySelectorAll('.pipe-step');
+    const detail = document.getElementById('stepDetail');
+    const hint = document.getElementById('pipeHint');
+
+    if (activeStep === i) {
+        // Toggle off
+        steps[i].classList.remove('active');
+        detail.innerHTML = '';
+        hint.style.display = '';
+        activeStep = -1;
+        return;
+    }
+
+    steps.forEach(s => s.classList.remove('active'));
+    steps[i].classList.add('active');
+    hint.style.display = 'none';
+    activeStep = i;
+
+    const s = STEPS[i];
+    detail.innerHTML = `
+        <div class="step-detail">
+            <div class="step-video">
+                <div class="play-icon">&#9654;</div>
+                <div class="coming-soon">Video coming soon</div>
+            </div>
+            <div class="step-info">
+                <h3>${s.title}</h3>
+                <p>${s.desc}</p>
+            </div>
+        </div>
+    `;
+}
+</script>
 </body>
 </html>
