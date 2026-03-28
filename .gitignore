@@ -24,6 +24,8 @@ htmlcov/
 *.cover
 *.log
 .env
+credentials.json
+token.json
 .venv
 env/
 venv/

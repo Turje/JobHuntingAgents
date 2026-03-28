@@ -32,7 +32,7 @@ def _make_client(agent_name: str = "test_agent"):
 
 class TestClaudeClientInit:
     def test_raises_when_key_missing(self):
-        with patch("pylon.config.ANTHROPIC_API_KEY", ""):
+        with patch("pylon.core.claude_client.ANTHROPIC_API_KEY", ""):
             from pylon.core.claude_client import ClaudeClient
             with pytest.raises(EnvironmentError, match="ANTHROPIC_API_KEY"):
                 ClaudeClient(agent_name="test")
