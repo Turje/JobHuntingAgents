@@ -7,6 +7,7 @@ COPY src/ src/
 COPY config/ config/
 COPY knowledge/ knowledge/
 COPY agents/ agents/
+COPY docs/ docs/
 
 RUN pip install --no-cache-dir ".[dspy]"
 
