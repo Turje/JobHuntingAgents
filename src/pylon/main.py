@@ -24,9 +24,13 @@ from pylon.config import CORS_ORIGINS, DSPY_ENABLED, HOST, LLM_PROVIDER, PORT
 from pylon.store import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-_DASHBOARD_HTML = _PROJECT_ROOT / "docs" / "app.html"
-_HOW_IT_WORKS_HTML = _PROJECT_ROOT / "docs" / "how-it-works.html"
-_LANDING_HTML = _PROJECT_ROOT / "docs" / "index.html"
+_DOCS_DIR = _PROJECT_ROOT / "docs"
+if not _DOCS_DIR.exists():
+    # Installed via pip in Docker — docs are under WORKDIR /app
+    _DOCS_DIR = Path.cwd() / "docs"
+_DASHBOARD_HTML = _DOCS_DIR / "app.html"
+_HOW_IT_WORKS_HTML = _DOCS_DIR / "how-it-works.html"
+_LANDING_HTML = _DOCS_DIR / "index.html"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s | %(levelname)s | %(message)s")
 _logger = logging.getLogger("pylon.main")
